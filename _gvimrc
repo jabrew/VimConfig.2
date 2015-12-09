@@ -1,0 +1,41 @@
+set vb t_vb=
+
+" (Only needed for SnippetsEmu)
+"aunmenu Snippets
+
+" Wide
+"winpos 300 26
+"set co=160
+"set lines=44
+
+" Normal
+" winpos 883 0
+winpos 530 0
+set co=84
+set lines=40
+winpos 530 0
+
+" Remote-Wide
+"winpos 259 26
+"set co=160
+"set lines=44
+
+" Remote-Normal
+"winpos 320 26
+"set co=124
+"set lines=44
+
+" Use both so that desert will override some odd defaults
+" colo desert
+" colo jasondesert
+" colo Tomorrow-Night-Eighties
+
+call ToggleMarginHighlight()
+
+nnoremap <silent> <leader>wn :winpos 883 0<CR>:set co=84<CR>:set lines=55<CR>
+nnoremap <silent> <leader>wl :winpos 1290 475<CR>
+
+"nnoremap <silent> <LEADER>sw :winpos 300 26<CR>:set co=160<CR>:set lines=47<CR>:if !g:showWindows<CR>:silent exe "call ToggleWindowsInTab()"<CR>:endif<CR><CR>
+"nnoremap <silent> <LEADER>sn :winpos 320 26<CR>:set co=124<CR>:set lines=47<CR>:if g:showWindows<CR>:silent exe "call ToggleWindowsInTab()"<CR>:endif<CR><CR>
+"nnoremap <silent> <LEADER>srw :winpos 259 26<CR>:set co=160<CR>:set lines=44<CR>:if !g:showWindows<CR>:silent exe "call ToggleWindowsInTab()"<CR>:endif<CR><CR>
+"nnoremap <silent> <LEADER>srn :winpos 320 26<CR>:set co=124<CR>:set lines=44<CR>:if g:showWindows<CR>:silent exe "call ToggleWindowsInTab()"<CR>:endif<CR><CR>
