@@ -1,4 +1,5 @@
-set rtp+=~/.vim/manual-bundle/YouCompleteMe
+set rtp+=~/VimConfig
+
 " Vundle {
   set nocompatible              " be iMproved, required
   filetype off                  " required
@@ -29,11 +30,36 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
   Plugin 'tpope/vim-surround'
   Plugin 'tpope/vim-unimpaired'
 
+  Plugin 'fholgado/minibufexpl.vim.git'
+  Plugin 'tmhedberg/matchit'
+
+  Plugin 'mileszs/ack.vim'
+  Plugin 'solarnz/thrift.vim'
+
+  " Syntax
+  " Jinja2 is about as close as we can get to nunjucks
+  Plugin 'Glench/Vim-Jinja2-Syntax'
+
+  " Experimenting
+  Plugin 'vimwiki/vimwiki'
+
   " Colors
   Plugin 'altercation/vim-colors-solarized'
   Plugin 'd11wtq/tomorrow-theme-vim'
+  Plugin 'jnurmine/Zenburn'
+  Plugin 'jonathanfilip/vim-lucius'
+  Plugin 'nanotech/jellybeans.vim'
   Plugin 'tomasr/molokai'
+
+  " Rejected colors
+  " Plugin '29decibel/codeschool-vim-theme'
+  " Plugin 'blueshirts/darcula'
   " Plugin 'jpo/vim-railscasts-theme'
+  " Plugin 'morhetz/gruvbox'
+  " Plugin 'sickill/vim-monokai'
+  " Plugin 'vim-scripts/darktango.vim'
+  " Plugin 'vim-scripts/twilight'
+  " Plugin 'w0ng/vim-hybrid'
 
 "  " The following are examples of different formats supported.
 "  " Keep Plugin commands between vundle#begin/end.
@@ -66,10 +92,22 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
   " see :h vundle for more details or wiki for FAQ
   " Put your non-Plugin stuff after this line
 " }
+set rtp+=~/.vim/manual-bundle/YouCompleteMe
 
 " Colors {
-  let g:molokai_original = 1
-  colorscheme molokai
+  " let g:molokai_original = 1
+  " colorscheme molokai
+
+  " let g:solarized_termcolors = 256
+  " colorscheme solarized
+
+  if has('gui_running')
+    " colorscheme desert
+    colorscheme jbrewer_desert
+  else
+    " colorscheme darcula
+    colorscheme jbrewer_desert
+  end
 " }
 
 " Basics {
@@ -102,6 +140,18 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
   " From http://ksjoberg.com/vim-esckeys.html , this should help the issue
   " where pushing esc takes a while to take effect
   set noesckeys
+
+  let g:mycwd = getcwd()
+  if getcwd() == '/Users/jbrewer/vimwiki' || getcwd() == '~/vimwiki' || !has('gui_running')
+    let g:is_tabbed = 1
+  else
+    let g:is_tabbed = 0
+  endif
+  if getcwd() == '/Users/jbrewer/vimwiki' || getcwd() == '~/vimwiki'
+    let g:is_wiki = 1
+  else
+    let g:is_wiki = 0
+  endif
 " }
 
 " Command mode options {
@@ -146,7 +196,14 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
     set hidden
 
     " Tab options
-    set showtabline=2
+    if g:is_tabbed
+      set showtabline=2
+    else
+      set showtabline=1
+    endif
+    " if g:is_wiki
+    "   set showtabline=1
+    " endif
     set switchbuf=usetab
 
     " Python indentation
@@ -175,6 +232,7 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
     au BufRead,BufNewFile *.tw             setfiletype python
     au BufRead,BufNewFile *.cinc           setfiletype python
     au BufRead,BufNewFile *.cconf          setfiletype python
+    au BufRead,BufNewFile *.nunjucks       setfiletype jinja
   augroup END
 
   " Some files set type to conf for some reason (when starting with # Copyright
@@ -235,8 +293,13 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
     "au GUIEnter * simalt ~x
 
     " au TabEnter * source ~/VimConfig/TabEnter.vim
-    au FileType ruby,eruby,yaml set ai sw=2 sts=2 et
+    " TODO: If indenting doesn't work right, consider adding ts=2
+    au FileType ruby,eruby,yaml setl ai sw=2 sts=2 et
     au FileType cpp set ai sw=2 sts=2 et
+    au FileType python setl ai sw=4 sts=4 et
+    au FileType javascript setl ai sw=4 sts=4 et
+    au FileType jinja setl ai sw=4 sts=4 et
+    au FileType go setl ai sw=4 sts=4 et
 
     "au Filetype html,xml,xsl source ~\vimfiles\bundle\closetag.vim
     "autocmd FileType ruby,eruby set omnifunc=rubycomplete#Complete
@@ -325,15 +388,30 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
             belowright copen
         endif
     endfunction
-    map <F2> ;cN<CR>
-    map <F3> ;cn<CR>
-    map <F4> ;silent exe "call ToggleQuickFix()"<CR>
+    nnoremap <F2> :cN<CR>
+    nnoremap <F3> :cn<CR>
+    nnoremap <F4> :silent exe "call ToggleQuickFix()"<CR>
 
     " General keybinds
-    nmap <C-P> ;tabp<CR>
-    nmap <C-N> ;tabn<CR>
-    nmap <M-p> ;bp<CR>
-    nmap <M-n> ;bn<CR>
+    if g:is_tabbed == 1
+      nnoremap <C-P> :tabp<CR>
+      nnoremap <C-N> :tabn<CR>
+      nnoremap <Leader>p :bp<CR>
+      nnoremap <Leader>n :bn<CR>
+      " nnoremap <M-P> :bp<CR>
+      " nnoremap <M-N> :bn<CR>
+      " nnoremap ð :bp<CR>
+      " nnoremap î :bn<CR>
+    else
+      nnoremap <C-P> :MBEbp<CR>
+      nnoremap <C-N> :MBEbn<CR>
+      nnoremap <Leader>p :tabp<CR>
+      nnoremap <Leader>n :tabn<CR>
+      " nnoremap <M-p> :tabp<CR>
+      " nnoremap <M-n> :tabn<CR>
+      " nnoremap ð :tabp<CR>
+      " nnoremap î :tabn<CR>
+    endif
     "nmap <C-S> ;A<CR>
 
     " Swap ; and : in normal mode
@@ -349,6 +427,11 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
     " ')
     nnoremap ' `
     nnoremap ` '
+
+    nnoremap <Up> <C-W>k
+    nnoremap <Down> <C-W>j
+    nnoremap <Left> <C-W>h
+    nnoremap <Right> <C-W>l
 " }
 
 " FSwitch {
@@ -496,8 +579,8 @@ nmap <C-H> <Plug>CamelCaseMotion_b
 nmap <leader>pt ;ptj <C-R><C-W><CR>
 " nmap <leader>t ;tjump <C-R><C-W><CR>
 nmap <leader>c ;pc<CR>
-nmap <leader>k ;cf buildchk.err<CR>
-nmap <leader>d ;cd %:p:h<CR>
+" nmap <leader>k ;cf buildchk.err<CR>
+" nmap <leader>d ;cd %:p:h<CR>
 nmap <leader>s ;vim // **<Left><Left><Left><Left>
 nnoremap <leader>o :vim // `git diff --name-only`<Home><Right><Right><Right><Right><Right>
 
@@ -524,12 +607,24 @@ nnoremap <silent> <leader>h :silent :nohlsearch<CR>
 
 " CtrlP {
   let g:ctrlp_map = '<leader>f'
-  let g:ctrlp_split_window = 1
+  " let g:ctrlp_split_window = 1
 
   " Would like this on, but this results in matching .swp and .swo files -
   " https://github.com/kien/ctrlp.vim/issues/19
   let g:ctrlp_dotfiles = 0
   " TODO: Set g:ctrlp_custom_ignore instead
+
+  if g:is_tabbed == 0 || g:is_wiki == 1
+    let g:ctrlp_prompt_mappings = {
+      \ 'AcceptSelection("t")': ['<c-t>'],
+      \ 'AcceptSelection("e")': ['<cr>', '<2-LeftMouse>'],
+      \ }
+  else
+    let g:ctrlp_prompt_mappings = {
+      \ 'AcceptSelection("e")': ['<c-t>'],
+      \ 'AcceptSelection("t")': ['<cr>', '<2-LeftMouse>'],
+      \ }
+  endif
 
   let g:ctrlp_working_path_mode = 1
 
@@ -584,38 +679,38 @@ let vimclojure#NailgunClient = 'd:\Programs\Development\vimclojure-2.2.0\ng.exe'
     Arpeggio imap cv <M-e>
 " }
 
-function! SendToConque(type)
-    " get most recent/relevant terminal
-    let term = conque_term#get_instance()
-
-    " shove visual text into @@ register
-    let reg_save = @@
-    sil exe "normal! `<" . a:type . "`>y"
-    let @@ = substitute(@@, '^[\r\n]*', '', '')
-    let @@ = substitute(@@, '[\r\n]*$', '', '')
-
-    " go to terminal buffer
-    call term.focus()
-
-    " execute yanked text
-    call term.writeln(@@)
-
-    " reset original values
-    let @@ = reg_save
-
-    " scroll buffer left
-    startinsert!
-    normal! 0zH
-endfunction
-
-" Conque {
-    " TODO: Add PyExe path if this is used often
-    " vnoremap p :<C-U>call SendToConque(visualmode())<CR>
-    " let g:ConqueTerm_CWInsert = 1
-
-    imap <F1> <Esc><C-W><C-W>
-    nmap <F1> <C-W><C-W>
-" }
+" function! SendToConque(type)
+"     " get most recent/relevant terminal
+"     let term = conque_term#get_instance()
+"
+"     " shove visual text into @@ register
+"     let reg_save = @@
+"     sil exe "normal! `<" . a:type . "`>y"
+"     let @@ = substitute(@@, '^[\r\n]*', '', '')
+"     let @@ = substitute(@@, '[\r\n]*$', '', '')
+"
+"     " go to terminal buffer
+"     call term.focus()
+"
+"     " execute yanked text
+"     call term.writeln(@@)
+"
+"     " reset original values
+"     let @@ = reg_save
+"
+"     " scroll buffer left
+"     startinsert!
+"     normal! 0zH
+" endfunction
+"
+" " Conque {
+"     " TODO: Add PyExe path if this is used often
+"     " vnoremap p :<C-U>call SendToConque(visualmode())<CR>
+"     " let g:ConqueTerm_CWInsert = 1
+"
+"     imap <F1> <Esc><C-W><C-W>
+"     nmap <F1> <C-W><C-W>
+" " }
 
 " Space {
     let g:space_no_character_movements = 1
@@ -659,6 +754,7 @@ endfunction
         \ 'active_filetypes': ['ruby', 'php', 'python'],
         \ 'passive_filetypes': ['cpp', 'java']
     \ }
+    let g:syntastic_python_flake8_args = "--config ~/VimConfig/.flake8-vim"
 
     let g:tagbar_type_php = {
         \ 'ctagstype' : 'php',
@@ -808,13 +904,13 @@ endfunction
 
   " Default blacklist includes text also
   let g:ycm_filetype_whitelist = { '*': 1 }
+  "  \ 'vimwiki' : 1,
   let g:ycm_filetype_blacklist = {
     \ 'tagbar' : 1,
     \ 'qf' : 1,
     \ 'notes' : 1,
     \ 'markdown' : 1,
     \ 'unite' : 1,
-    \ 'vimwiki' : 1,
     \ 'pandoc' : 1,
     \ 'infolog' : 1,
     \ 'mail' : 1
@@ -824,4 +920,46 @@ endfunction
 " Obsession (session manager) {
   " nnoremap <leader>z :Obsess /home/jbrewer/vim-sessions/.vim<Left><Left><Left><Left>
   " nnoremap <leader>z :source /home/jbrewer/vim-sessions/
+" }
+
+" Vimwiki {
+  let g:vimwiki_hl_headers = 1
+  let g:vimwiki_conceallevel = 0
+" }
+
+" MiniBufExpl {
+  if g:is_tabbed == 1
+    nnoremap <Leader>d :bd<CR>
+
+    let g:miniBufExplorerAutoStart = 0
+  else
+    nnoremap <Leader>d :MBEbd<CR>
+
+    let g:miniBufExplVSplit = 30   " Column width in chars
+    let g:miniBufExplBRSplit = 0   " Split on left
+
+    let g:miniBufExplorerAutoStart = 1
+    let g:miniBufExplBuffersNeeded = 0
+    let g:miniBufExplShowBufNumbers = 0
+    let g:miniBufExplCycleArround = 1
+  endif
+" }
+
+" ack.vim {
+  if executable('ag')
+    let g:ackprg = 'ag --vimgrep'
+  endif
+" }
+
+" iTerm {
+  " tmux will only forward escape sequences to the terminal if surrounded by a DCS sequence
+  " http://sourceforge.net/mailarchive/forum.php?thread_name=AANLkTinkbdoZ8eNR1X2UobLTeww1jFrvfJxTMfKSq-L%2B%40mail.gmail.com&forum_name=tmux-users
+
+  if exists('$TMUX')
+    let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
+    let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
+  else
+    let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+    let &t_EI = "\<Esc>]50;CursorShape=0\x7"
+  endif
 " }
