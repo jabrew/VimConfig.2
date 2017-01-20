@@ -18,6 +18,7 @@ set rtp+=~/VimConfig
 
   Plugin 'kien/ctrlp.vim'
   Plugin 'sjl/gundo.vim'
+  " Alternative: https://github.com/vim-scripts/argtextobj.vim
   Plugin 'vim-scripts/Parameter-Text-Objects'
   Plugin 'vim-scripts/swap-parameters'
   Plugin 'scrooloose/syntastic'
@@ -29,18 +30,27 @@ set rtp+=~/VimConfig
   Plugin 'tpope/vim-repeat'
   Plugin 'tpope/vim-surround'
   Plugin 'tpope/vim-unimpaired'
-
-  Plugin 'fholgado/minibufexpl.vim.git'
   Plugin 'tmhedberg/matchit'
 
+  Plugin 'fholgado/minibufexpl.vim.git'
+
   Plugin 'mileszs/ack.vim'
-  Plugin 'solarnz/thrift.vim'
+
+  " rsi is simpler, but works in a few more modes
+  Plugin 'vim-utils/vim-husk'
+
+  " Text objects
+  Plugin 'kana/vim-textobj-user'
+  Plugin 'thalesmello/vim-textobj-methodcall'
+  Plugin 'wellle/targets.vim'
+  Plugin 'bkad/CamelCaseMotion'
 
   " Syntax
   " Jinja2 is about as close as we can get to nunjucks
-  Plugin 'Glench/Vim-Jinja2-Syntax'
+  " Plugin 'Glench/Vim-Jinja2-Syntax'
+  Plugin 'solarnz/thrift.vim'
 
-  " Experimenting
+  " Wiki
   Plugin 'vimwiki/vimwiki'
 
   " Colors
@@ -60,6 +70,9 @@ set rtp+=~/VimConfig
   " Plugin 'vim-scripts/darktango.vim'
   " Plugin 'vim-scripts/twilight'
   " Plugin 'w0ng/vim-hybrid'
+
+  " Colors to try
+  " Plugin 'joshdick/onedark.vim'
 
 "  " The following are examples of different formats supported.
 "  " Keep Plugin commands between vundle#begin/end.
@@ -123,7 +136,7 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
   set showcmd
   set wildmode=list:longest,full
 
-  set lcs=tab:»\ ,trail:·,extends:#,nbsp:.
+  set lcs=tab:Â»\ ,trail:Â·,extends:#,nbsp:.
   set list
 
   set number
@@ -154,10 +167,16 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
   endif
 " }
 
-" Command mode options {
-    cmap <M-f> <C-Right>
-    cmap <M-b> <C-Left>
-    cmap <C-a> <Home>
+" Replaced with vim-husk
+" " Command mode options {
+"     cmap <M-f> <C-Right>
+"     cmap <M-b> <C-Left>
+"     cmap <C-a> <Home>
+" " }
+
+" vim-husk {
+  cnoremap <expr> âˆ« husk#left()
+  cnoremap <expr> Æ’ husk#right()
 " }
 
 " Path options {
@@ -400,8 +419,8 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
       nnoremap <Leader>n :bn<CR>
       " nnoremap <M-P> :bp<CR>
       " nnoremap <M-N> :bn<CR>
-      " nnoremap ð :bp<CR>
-      " nnoremap î :bn<CR>
+      " nnoremap Ã° :bp<CR>
+      " nnoremap Ã® :bn<CR>
     else
       nnoremap <C-P> :MBEbp<CR>
       nnoremap <C-N> :MBEbn<CR>
@@ -409,8 +428,8 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
       nnoremap <Leader>n :tabn<CR>
       " nnoremap <M-p> :tabp<CR>
       " nnoremap <M-n> :tabn<CR>
-      " nnoremap ð :tabp<CR>
-      " nnoremap î :tabn<CR>
+      " nnoremap Ã° :tabp<CR>
+      " nnoremap Ã® :tabn<CR>
     endif
     "nmap <C-S> ;A<CR>
 
@@ -459,9 +478,12 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
     nmap <leader>m ;silent exe "call ToggleMarginHighlight()"<CR>
 " }
 
-" Jumping
-nmap <C-L> <Plug>CamelCaseMotion_w
-nmap <C-H> <Plug>CamelCaseMotion_b
+" CamelCaseMotion {
+  " nmap <C-L> <Plug>CamelCaseMotion_w
+  " nmap <C-H> <Plug>CamelCaseMotion_b
+  omap <silent> .w <Plug>CamelCaseMotion_iw
+  xmap <silent> .w <Plug>CamelCaseMotion_iw
+" }
 
 " let g:camelchar = "A-Z0-9.,;:{([`'\""
 " let g:searchpattern = '\C\<\|\%(^\|[^'.g:camelchar.']\@<=\)['.g:camelchar.']\|['.g:camelchar.']\ze\%([^'.g:camelchar.']\&\>\@!\)\|\%$'

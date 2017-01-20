@@ -1,0 +1,140 @@
+" True colors in terminal
+set termguicolors
+
+set nocompatible
+
+" Custom cursor in terminal (note: may not work in tmux - see faq to fix)
+:let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
+
+" Dein {
+
+" Required:
+set runtimepath+=/Users/jbrewer/.neovim/dein/repos/github.com/Shougo/dein.vim
+set runtimepath+=~/VimConfig
+
+" Required:
+if dein#load_state('/Users/jbrewer/.neovim/dein/')
+  call dein#begin('/Users/jbrewer/.neovim/dein/')
+
+  " Let dein manage dein
+  " Required:
+  call dein#add('/Users/jbrewer/.neovim/dein/repos/github.com/Shougo/dein.vim')
+
+  call dein#add('Shougo/deoplete.nvim')
+
+  " Add or remove your plugins here:
+  " call dein#add('Shougo/neosnippet.vim')
+  " call dein#add('Shougo/neosnippet-snippets')
+
+  " You can specify revision/branch/tag.
+  " call dein#add('Shougo/vimshell', { 'rev': '3787e5' })
+
+  " Required:
+  call dein#end()
+  call dein#save_state()
+endif
+
+filetype plugin indent on
+syntax enable
+
+" }
+
+" Keybindings {
+  " Swap ; and : in normal mode
+  nnoremap : ;
+  nnoremap ; :
+  vnoremap : ;
+  vnoremap ; :
+" }
+
+" Basic configs {
+  colorscheme jbrewer_desert
+
+  set nocompatible
+  set ruler
+  set ignorecase
+  set smartcase
+  set incsearch
+  set hls
+
+  " TODO: Consider 'showfulltag' for autocomplete
+
+  set showcmd
+  set wildmode=list:longest,full
+
+  set lcs=tab:»\ ,trail:·,extends:#,nbsp:.
+  set list
+
+  set number
+
+  set wildmenu
+
+  " Keep at least 5 lines above and below the cursor
+  set scrolloff=5
+
+  " Causes flashing on startup with Neovim.app - but may make macro replays
+  " significantly faster
+  " set lazyredraw
+
+  set vb t_vb=
+
+  set formatoptions=croqln
+
+  " set cursorline
+
+  " From http://ksjoberg.com/vim-esckeys.html , this should help the issue
+  " where pushing esc takes a while to take effect
+  set noesckeys
+
+  let g:mycwd = getcwd()
+  if g:mycwd == '/Users/jbrewer/vimwiki' || g:mycwd == '~/vimwiki' || !has('gui_running')
+    let g:is_tabbed = 1
+  else
+    let g:is_tabbed = 0
+  endif
+  if g:mycwd == '/Users/jbrewer/vimwiki' || g:mycwd == '~/vimwiki'
+    let g:is_wiki = 1
+  else
+    let g:is_wiki = 0
+  endif
+" }
+
+" Deplete {
+  let g:deoplete#enable_at_startup = 1
+  let g:deoplete#enable_smart_case = 1
+
+  inoremap <silent><expr> <Tab> pumvisible() ? "\<C-N>" : "\<Tab>"
+
+  " <CR>: close popup and save indent.
+  inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
+  function! s:my_cr_function() abort
+    return deoplete#close_popup() . "\<CR>"
+  endfunction
+" }
+
+" Gui only options {
+  if g:is_tabbed
+    " VimWiki
+    winpos 924 23
+    " winpos 2681 631
+
+    set co=84
+    set lines=40
+  else
+    " " No MBE
+    " winpos 924 23
+    "
+    " set co=84
+    " set lines=40
+
+    " MBE
+    " Regular vim
+    winpos 645 23
+    " winpos 1085 23
+
+    set co=115
+    set lines=40
+
+    " set guifont=Source\ Code\ Pro:h15
+  endif
+" }
