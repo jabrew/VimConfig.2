@@ -67,6 +67,9 @@ set rtp+=~/VimConfig
   Plugin 'nanotech/jellybeans.vim'
   Plugin 'tomasr/molokai'
 
+  " Also consider lightline/airline theme
+  Plugin 'fneu/breezy'
+
   " Rejected colors
   " Plugin '29decibel/codeschool-vim-theme'
   " Plugin 'blueshirts/darcula'
