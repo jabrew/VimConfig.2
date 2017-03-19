@@ -163,13 +163,19 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
   " where pushing esc takes a while to take effect
   set noesckeys
 
+  " To set up vimwiki:
+  " cd /Applications
+  " cp -r MacVim.app/ VimWiki.app/
+  " cd VimWiki.app/Contents/
+  " gvim Info.plist
+  " - Replace CFBundleName >MacVim< with >VimWiki<
   let g:mycwd = getcwd()
-  if getcwd() == '/Users/jbrewer/vimwiki' || getcwd() == '~/vimwiki' || !has('gui_running')
+  if getcwd() == expand('~/vimwiki') || getcwd() == '~/vimwiki' || !has('gui_running')
     let g:is_tabbed = 1
   else
     let g:is_tabbed = 0
   endif
-  if getcwd() == '/Users/jbrewer/vimwiki' || getcwd() == '~/vimwiki'
+  if getcwd() == expand('~/vimwiki') || getcwd() == '~/vimwiki'
     let g:is_wiki = 1
   else
     let g:is_wiki = 0
@@ -462,6 +468,27 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
     nnoremap <Right> <C-W>l
 " }
 
+" Space keybindings {
+  " Space bindings - should be very organized and easy to use, but harder to
+  " type. Any very frequently used bindings should be moved to dedicated keys
+  " TODO: Use plugin to visualize/hint these
+
+  " Clipboard (c)
+  vnoremap <Space>cy "*y
+  vnoremap <Space>cp "*p
+
+  nnoremap <Space>cy "*y
+  nnoremap <Space>cp "*p
+  nnoremap <Space>cP "*P
+
+  nnoremap <Space>cc "*yip
+
+  " Files (f)
+
+  nnoremap <Space>fw :w<CR>
+  nnoremap <Space>fq :wqa<CR>
+" }
+
 " FSwitch {
     " au! BufEnter *.cpp let b:fswitchdst = 'h' | let b:fswitchlocs = '.,../inc'
     " au! BufEnter *.h let b:fswitchdst = 'cpp' | let b:fswitchlocs = '.,../lib'
@@ -595,10 +622,6 @@ let vimclojure#NailgunClient = 'd:\Programs\Development\vimclojure-2.2.0\ng.exe'
     Arpeggio nmap we <Plug>(easymotion-s2)
     Arpeggio vmap we <Plug>(easymotion-s2)
     Arpeggio imap cv <M-e>
-" }
-
-" Space {
-    let g:space_no_character_movements = 1
 " }
 
 " Rainbow {
@@ -803,6 +826,7 @@ let vimclojure#NailgunClient = 'd:\Programs\Development\vimclojure-2.2.0\ng.exe'
 " }
 
 " Obsession (session manager) {
+  " TODO: If using this, use expand(~/vim-sessions)
   " nnoremap <leader>z :Obsess /home/jbrewer/vim-sessions/.vim<Left><Left><Left><Left>
   " nnoremap <leader>z :source /home/jbrewer/vim-sessions/
 " }
@@ -810,6 +834,11 @@ let vimclojure#NailgunClient = 'd:\Programs\Development\vimclojure-2.2.0\ng.exe'
 " Vimwiki {
   let g:vimwiki_hl_headers = 1
   let g:vimwiki_conceallevel = 0
+  " inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+
+  " Note: Could put in ftplugin, but nice to have here. Resolve conflict between
+  " vimwiki and YCM
+  autocmd FileType vimwiki inoremap <expr> <buffer> <Tab> pumvisible() ? "\<C-n>" : vimwiki#tbl#kbd_tab()
 " }
 
 " MiniBufExpl {

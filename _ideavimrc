@@ -1,0 +1,31 @@
+" Basic actions {
+  nnoremap : ;
+  nnoremap ; :
+  vnoremap : ;
+  vnoremap ; :
+  inoremap jk <Esc>
+  inoremap kj <Esc>
+" }
+
+" Actions: https://gist.github.com/zchee/9c78f91cc5ad771c1f5d
+" :actionlist to show actions
+" :action Name to run action
+
+" Tab actions {
+  nnoremap <C-N> :action NextTab<CR>
+  nnoremap <C-P> :action PreviousTab<CR>
+" }
+
+" File actions {
+  nnoremap <Space>ff :action GotoFile<CR>
+  nnoremap <Space>fs :action GotoSymbol<CR>
+  nnoremap <Space>fc :action GotoClass<CR>
+  nnoremap <Space>fi :action FileStructurePopup<CR>
+  nnoremap <Space>fa :action SearchEverywhere<CR>
+" }
+
+" Code formatting {
+  nnoremap <Space>of :action ReformatCode<CR>
+  vnoremap <Space>of :action ReformatCode<CR>
+  nnoremap <Space>oi :action OptimizeImports<CR>
+" }
