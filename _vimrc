@@ -36,11 +36,12 @@ set rtp+=~/VimConfig
 
   Plugin 'mileszs/ack.vim'
   " Plugin 'ivanov/vim-ipython'
+  Plugin 'davidhalter/jedi-vim'
 
   " Devdocs
   " Inline with vim, but seems to only search language docs
   " Plugin 'thomasthune/devdocsbuf'
-  Plugin 'rhysd/devdocs.vim'
+  " Plugin 'rhysd/devdocs.vim'
 
   " rsi is simpler, but works in a few more modes
   Plugin 'vim-utils/vim-husk'
@@ -145,7 +146,11 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
   set showcmd
   set wildmode=list:longest,full
 
-  set lcs=tab:»\ ,trail:·,extends:#,nbsp:.
+  if has('win32')
+    set lcs=tab:�\ ,trail:�,extends:#,nbsp:.
+  else
+    set lcs=tab:»\ ,trail:·,extends:#,nbsp:.
+  endif
   set list
 
   set number
@@ -801,7 +806,13 @@ let vimclojure#NailgunClient = 'd:\Programs\Development\vimclojure-2.2.0\ng.exe'
   " Very nice, but throws random errors in fbcode
   let g:ycm_register_as_syntastic_checker = 0
   let g:ycm_collect_identifiers_from_comments_and_strings = 1
-  let g:ycm_autoclose_preview_window_after_completion = 1
+  let g:ycm_autoclose_preview_window_after_completion = 0
+  let g:ycm_autoclose_preview_window_after_insertion = 1
+  let g:ycm_complete_in_strings = 1
+  let g:ycm_complete_in_comments = 1
+
+  " E.g. open the preview window (and other windows) below the current window
+  set splitbelow
 
   " let g:ycm_show_diagnostics_ui = 1
   " let g:ycm_error_symbol = 'x'
@@ -892,5 +903,9 @@ let vimclojure#NailgunClient = 'd:\Programs\Development\vimclojure-2.2.0\ng.exe'
   let g:devdocs_filetype_map = {
     \   'python': '*',
     \ }
-  nmap K <Plug>(devdocs-under-cursor)
+  " nmap K <Plug>(devdocs-under-cursor)
 " }
+
+if has('win32')
+  source ~/VimConfig/_vimrc.windows
+endif

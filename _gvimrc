@@ -38,7 +38,8 @@ else
 
   " MBE
   " Regular vim
-  winpos 645 23
+  " winpos 645 23
+  winpos 247 31
   " winpos 1085 23
 
   set co=115
@@ -64,7 +65,8 @@ endif
 
 " nnoremap <silent> <leader>wn :winpos 883 0<CR>:set co=84<CR>:set lines=55<CR>
 " nnoremap <silent> <leader>wn :winpos 924 23<CR>:set co=84<CR>:set lines=40<CR>
-nnoremap <silent> <leader>wn :winpos 645 23<CR>:set co=115<CR>:set lines=41<CR>
+" nnoremap <silent> <leader>wn :winpos 645 23<CR>:set co=115<CR>:set lines=41<CR>
+nnoremap <silent> <leader>wn :winpos 247 31<CR>:set co=115<CR>:set lines=41<CR>
 nnoremap <silent> <leader>wh :winpos 325 23<CR>:set co=115<CR>:set lines=41<CR>
 nnoremap <silent> <leader>wl :winpos 1290 475<CR>
 
