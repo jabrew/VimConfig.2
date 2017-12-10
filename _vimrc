@@ -492,6 +492,9 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
 
   nnoremap <Space>fw :w<CR>
   nnoremap <Space>fq :wqa<CR>
+
+  " Jedi (j)
+  " Note: Bindings in jedi-vim section
 " }
 
 " FSwitch {
@@ -899,11 +902,37 @@ let vimclojure#NailgunClient = 'd:\Programs\Development\vimclojure-2.2.0\ng.exe'
 " }
 
 " devdocs {
-  let g:devdocs_host = 'localhost:9292'
-  let g:devdocs_filetype_map = {
-    \   'python': '*',
-    \ }
+  " let g:devdocs_host = 'localhost:9292'
+  " let g:devdocs_filetype_map = {
+  "   \   'python': '*',
+  "   \ }
   " nmap K <Plug>(devdocs-under-cursor)
+" }
+
+" jedi-vim {
+  let g:jedi#auto_vim_configuration = 0
+  let g:jedi#popup_on_dot = 0
+  let g:jedi#popup_select_first = 0
+
+  " 1 shows inline, 2 shows in command window
+  "
+  " 1 is too noisy to be automatic, but much more helpful (multiline). In
+  " future, consider instead setting the call signatures to a hotkey
+  let g:jedi#show_call_signatures = 2
+  let g:jedi#show_call_signatures_delay = 0
+
+  " Required for show_call_signatures = 2
+  set noshowmode
+
+  let g:jedi#completions_enabled = 0
+  let g:jedi#smart_auto_mappings = 0
+
+  " Bindings
+  let g:jedi#goto_command = '<Space>jd'
+  let g:jedi#goto_assignments_command = '<Space>jg'
+  let g:jedi#usages_command = '<Space>jn'
+  let g:jedi#rename_command = '<Space>jr'
+  " let g:jedi#documentation_command = 'K'
 " }
 
 if has('win32')

@@ -24,7 +24,11 @@ endif
 " Mac monitor
 if g:is_tabbed
   " VimWiki
-  winpos 924 23
+  " winpos 924 23
+
+  " Dell Monitor, large text
+  winpos 1161 274
+
   " winpos 2681 631
 
   set co=84
@@ -39,8 +43,17 @@ else
   " MBE
   " Regular vim
   " winpos 645 23
-  winpos 247 31
+
+  " Desktop (windows)
+  " winpos 247 31
+
   " winpos 1085 23
+
+  " Dell Monitor, large text
+  " winpos 325 23
+
+  " Dell Monitor, smaller text (mac)
+  winpos 645 23
 
   set co=115
   set lines=40
@@ -66,9 +79,11 @@ endif
 " nnoremap <silent> <leader>wn :winpos 883 0<CR>:set co=84<CR>:set lines=55<CR>
 " nnoremap <silent> <leader>wn :winpos 924 23<CR>:set co=84<CR>:set lines=40<CR>
 " nnoremap <silent> <leader>wn :winpos 645 23<CR>:set co=115<CR>:set lines=41<CR>
-nnoremap <silent> <leader>wn :winpos 247 31<CR>:set co=115<CR>:set lines=41<CR>
+nnoremap <silent> <leader>ww :winpos 247 31<CR>:set co=115<CR>:set lines=41<CR>
+nnoremap <silent> <leader>wn :winpos 645 23<CR>:set co=115<CR>:set lines=41<CR>
+nnoremap <silent> <leader>wl :winpos 645 23<CR>:set co=200<CR>:set lines=46<CR>
 nnoremap <silent> <leader>wh :winpos 325 23<CR>:set co=115<CR>:set lines=41<CR>
-nnoremap <silent> <leader>wl :winpos 1290 475<CR>
+" nnoremap <silent> <leader>wl :winpos 1290 475<CR>
 
 "nnoremap <silent> <LEADER>sw :winpos 300 26<CR>:set co=160<CR>:set lines=47<CR>:if !g:showWindows<CR>:silent exe "call ToggleWindowsInTab()"<CR>:endif<CR><CR>
 "nnoremap <silent> <LEADER>sn :winpos 320 26<CR>:set co=124<CR>:set lines=47<CR>:if g:showWindows<CR>:silent exe "call ToggleWindowsInTab()"<CR>:endif<CR><CR>
