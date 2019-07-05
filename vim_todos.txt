@@ -1,0 +1,119 @@
+= Motions and Text Objects =
+
+- Keep position within match using * - https://github.com/haya14busa/vim-asterisk
+- Comment text object
+- Learn motions for e.g. class, function
+- TODO: Consider https://github.com/rhysd/clever-f.vim
+- tcomment - map textobj for comment, or switch plugins
+
+= Git =
+
+- Operate on prs - e.g. stage one hunk at a time, etc - https://github.com/jreybert/vimagit
+  - Works with signify
+- https://github.com/zenbro/dotfiles/blob/master/.nvimrc#L151-L187
+  - Gitgutter examples: Can stage/revert/etc single hunks
+  - Fugitive: Decent key bindings
+- Interactive blame - built into fugitive
+- Commit browser - https://github.com/junegunn/gv.vim
+  - Slower? - https://github.com/gregsexton/gitv
+- Fugitive plugins
+  - https://github.com/christoomey/vim-conflicted - handle merge conflicts
+  - https://github.com/sodapopcan/vim-twiggy - Manage branches
+
+= Documentation =
+
+- devdocs
+  - https://github.com/iamcco/devdocs.nvim
+  - https://github.com/sunaku/dasht
+
+= Tags =
+
+- TODO: Generate cscope db within gutentags as well
+- Add find usages - https://alex.dzyoba.com/blog/vim-revamp/
+- https://github.com/jsfaint/gen_tags.vim
+  - Maybe easier find references
+- Dynamic tag highlight
+  - Neotags.nvim - https://www.reddit.com/r/neovim/comments/53mdj9/neotagsnvim_tag_highlight_in_neovim/
+    - But integrate with gutentags
+    - Focus on speed - e.g. c++ module to parse tags file, etc
+  - Semshi - way more functional - local vs global colors, etc
+  - EasyTags - but long time since last update
+- Tagbar or alternative - https://github.com/majutsushi/tagbar
+  - Vista.vim
+    - Fzf support inline is very useful - http://liuchengxu.org/posts/vista.vim/
+- FlyGrep/Denite: Search only tagbar buffer
+- Fix tf jump to definition
+  - https://www.reddit.com/r/vim/comments/4d2fos/if_you_use_tags_whats_your_workflow_like/
+    - tags command can take a regex if prepended with / - so e.g. can use nnoremap <buffer> <C-]> :tjump /<c-r>=expand('<cword>')<CR><CR> to find tags including module names
+
+= File Explorer =
+
+- Maybe defer?
+  - https://github.com/francoiscabrol/ranger.vim
+  - defx.nvim
+
+= Navigation =
+
+- Learn fzf cli (preview, clipboard, etc)
+- Fzf floating window
+  - https://kassioborges.dev/2019/04/10/neovim-fzf-with-a-floating-window.html
+  - Seems to require fzf.vim (instead of direct call)
+- https://github.com/tpope/vim-projectionist
+  - Jump to alternate files (test -> implementation)
+
+= Colors =
+
+- https://github.com/mhinz/vim-janah
+- https://github.com/NLKNguyen/papercolor-theme
+- Jellybeans
+
+= Snippets =
+
+- Templates
+  - Create templates for common operations (argparse, bq)
+- Use visual placeholder for e.g. wrapping code in functions - https://yufanlu.net/2016/10/30/ultisnips/
+- Use different key for insert snippet vs next insertion (or is ambiguous)
+
+= Session =
+
+- https://github.com/mhinz/vim-startify
+- https://github.com/thaerkh/vim-workspace
+  - Note: Given that this autosaves files, probably only enable after enabling persistent-undo
+- https://github.com/vim-ctrlspace/vim-ctrlspace
+  - Separate buffers per tab
+
+= Marks =
+
+- https://github.com/kshenoy/vim-signature
+  - Or https://github.com/zakj/vim-showmarks
+  - Show marks, navigate, etc
+
+= Other =
+
+- limelight.vim : Highlight current paragraph
+- TODO: Consider darkening current line
+- TODO: Consider darkening background buffers
+- TODO: Persistent undo - https://github.com/zenbro/dotfiles/blob/master/.nvimrc#L566
+- Undo plugins: Gundo, undotree, mundo
+
+= Prompts =
+
+- Zsh
+  - Prompt: https://github.com/edkolev/promptline.vim
+- Powerline
+  - Zsh: see newline - https://github.com/bhilburn/powerlevel9k
+- Zsh: https://github.com/denysdovhan/spaceship-prompt
+
+= Todo for later =
+
+- Profiling - e.g. debug slow vimrc - https://github.com/bling/minivimrc
+- Gtags - tag manager (gnu global). denite-gtags
+- Voom - outliner, partial code runner - https://github.com/vim-scripts/VOoM
+- Yank code - adds useful extras for e.g. pasting to slack - https://github.com/AaronLasseigne/yank-code
+- YankRing alternatives
+  - https://github.com/Shougo/neoyank.vim
+  - https://www.reddit.com/r/vim/comments/4u5d0n/alternative_to_yankring/
+- Rainbow parentheses
+- Denite: Colorscheme for mode
+- https://vimawesome.com/plugin/vim-autoswap
+- Custom alacritty icon (e.g. for wiki) - https://www.reddit.com/r/Crostini/comments/arbuag/alacritty_terminal/

@@ -1,0 +1,63 @@
+= Completion plugins =
+
+- coc seems nice, but fails simple cases with pyls - try jedi
+  - e.g. Open ~/test.py from any non-~ folder
+- ncm2 and deoplete require python3
+
+= Coc =
+
+- https://github.com/neoclide/coc-highlight - highlight current symbol
+- https://github.com/neoclide/coc-sources
+- https://github.com/neoclide/coc-yank - highlight yanked text
+- https://github.com/neoclide/coc-git - async git gutter update
+
+= Ncm2 =
+
+Can potentially try with language server
+- https://github.com/Microsoft/python-language-server
+- https://github.com/prabirshrestha/vim-lsp
+- ncm2 + vim-lsp - https://github.com/ncm2/ncm2/issues/36
+- ncm2 float-window - stop auto close
+Conflicts with <CR> mappings
+- https://github.com/ncm2/ncm2/issues/129
+- https://github.com/ncm2/ncm2/issues/163
+
+= Pair plugins =
+
+- Very few plugins support .
+- jiangmiao/auto-pairs is new version of the one in _vimrc. Supports . as long as <CR> never pressed
+- delimitMate may have support for .
+- Pear-tree - may have fixed bugs after 6/1
+
+= Statusline =
+
+- Investigate other statusline plugins
+ - https://github.com/vim-airline/vim-airline
+ - https://github.com/itchyny/lightline.vim
+ - https://github.com/powerline/powerline - heavy weight, but works in zsh too
+
+= Unit Tests/Build =
+
+- dispatch.vim
+- https://github.com/janko/vim-test
+  - Config example / terminal strategy - https://github.com/zenbro/dotfiles/blob/master/.nvimrc#L151-L187
+- https://github.com/alfredodeza/pytest.vim
+  - Seems to only be py.test
+- Built in: https://vim.fandom.com/wiki/Integration_with_PyUnit_testing_framework
+  - :compiler , :make
+- NeoMake will add signs
+- Ale
+  - Add fixer
+  - Bind ALENext/ALEPrevious
+
+= Tags =
+
+- gtags
+  - gutentags_plus
+  - gtags should be like ctags but much faster to access - not constrained to flat text format
+  - May also allow indexing e.g. tensorflow code
+
+= Tips =
+
+- Ctrl-f during a search - show search history
+- q: , q/ , q? - recent commands and searches

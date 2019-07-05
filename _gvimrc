@@ -5,10 +5,16 @@ set vb t_vb=
 
 " TODO: Use if has('gui_running') instead of this file
 
-if getcwd() == '/Users/jbrewer/vimwiki' || getcwd() == '~/vimwiki' || !has('gui_running')
+let g:mycwd = getcwd()
+if g:mycwd == expand('~/vimwiki') || g:mycwd == '~/vimwiki' || (!has('gui_running') && !has('nvim'))
   let g:is_tabbed = 1
 else
   let g:is_tabbed = 0
+endif
+if g:mycwd == expand('~/vimwiki') || g:mycwd == '~/vimwiki'
+  let g:is_wiki = 1
+else
+  let g:is_wiki = 0
 endif
 
 " Wide
