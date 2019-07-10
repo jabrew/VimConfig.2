@@ -14,11 +14,11 @@
   - Gitgutter examples: Can stage/revert/etc single hunks
   - Fugitive: Decent key bindings
 - Interactive blame - built into fugitive
-- Commit browser - https://github.com/junegunn/gv.vim
-  - Slower? - https://github.com/gregsexton/gitv
 - Fugitive plugins
   - https://github.com/christoomey/vim-conflicted - handle merge conflicts
   - https://github.com/sodapopcan/vim-twiggy - Manage branches
+  - Commit browser - https://github.com/junegunn/gv.vim
+    - Slower? - https://github.com/gregsexton/gitv
 
 = Documentation =
 
@@ -30,14 +30,10 @@
 
 - TODO: Generate cscope db within gutentags as well
 - Add find usages - https://alex.dzyoba.com/blog/vim-revamp/
+- Add tags for libraries
 - https://github.com/jsfaint/gen_tags.vim
   - Maybe easier find references
-- Dynamic tag highlight
-  - Neotags.nvim - https://www.reddit.com/r/neovim/comments/53mdj9/neotagsnvim_tag_highlight_in_neovim/
-    - But integrate with gutentags
-    - Focus on speed - e.g. c++ module to parse tags file, etc
-  - Semshi - way more functional - local vs global colors, etc
-  - EasyTags - but long time since last update
+- Semshi - bind keys to next/prev instance, etc
 - Tagbar or alternative - https://github.com/majutsushi/tagbar
   - Vista.vim
     - Fzf support inline is very useful - http://liuchengxu.org/posts/vista.vim/
@@ -51,6 +47,11 @@
 - Maybe defer?
   - https://github.com/francoiscabrol/ranger.vim
   - defx.nvim
+    - defx-icons
+    - defx-git
+    - https://github.com/jlesquembre/dotfiles/blob/746dc229305f9c447dff98f8240371ecdb57e032/nvim/init.vim#L1126-L1187
+  - Maybe nerdtree
+    - https://github.com/albfan/nerdtree-file-filter-plugin
 
 = Navigation =
 
@@ -94,7 +95,6 @@
 - TODO: Consider darkening current line
 - TODO: Consider darkening background buffers
 - TODO: Persistent undo - https://github.com/zenbro/dotfiles/blob/master/.nvimrc#L566
-- Undo plugins: Gundo, undotree, mundo
 
 = Prompts =
 
@@ -102,7 +102,15 @@
   - Prompt: https://github.com/edkolev/promptline.vim
 - Powerline
   - Zsh: see newline - https://github.com/bhilburn/powerlevel9k
+  - Need to compile
+  https://powerline.readthedocs.io/en/master/troubleshooting.html (seems slow otherwise)
+  - libzpython (if we use powerline)
+  - Example 2-line prompt:
+  https://github.com/yongjhih/rc/blob/master/.config/powerline/themes/shell/default.json
+  - Move config to dotfiles + symlink
 - Zsh: https://github.com/denysdovhan/spaceship-prompt
+- Config to ~/.config/powerline-shell/config.json
+  - Reload with powerline-daemon --replace (until libzpython)
 
 = Todo for later =
 

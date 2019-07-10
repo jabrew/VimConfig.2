@@ -3,6 +3,9 @@
 - coc seems nice, but fails simple cases with pyls - try jedi
   - e.g. Open ~/test.py from any non-~ folder
 - ncm2 and deoplete require python3
+- TabNine seems interesting, but expensive
+  - tbodt/deoplete-tabnine
+  - https://tabnine.com
 
 = Coc =
 
@@ -56,8 +59,33 @@ Conflicts with <CR> mappings
   - gutentags_plus
   - gtags should be like ctags but much faster to access - not constrained to flat text format
   - May also allow indexing e.g. tensorflow code
+- Dynamic tag highlight
+  - Selected semshi - way more dynamic and full featured, but probably slower
+  - Neotags.nvim - https://www.reddit.com/r/neovim/comments/53mdj9/neotagsnvim_tag_highlight_in_neovim/
+    - But integrate with gutentags
+    - Focus on speed - e.g. c++ module to parse tags file, etc
+  - EasyTags - but long time since last update
+
+= Other =
+
+- https://github.com/ryanoasis/vim-devicons
+- vim-operator-replace - replace selected text with clipboard
+
+= References =
+
+- https://github.com/taigacute/ThinkVim
+  - Setup for lots of plugins, including coc
+- https://github.com/petobens/dotfiles/blob/master/vim/init.vim
+  - Lots of mac/win/linux
+  - Caching and lazy loading
 
 = Tips =
 
 - Ctrl-f during a search - show search history
 - q: , q/ , q? - recent commands and searches
+- set colorcolumn=+1 - colors text past textwidth
+- Highlight multiple words - https://github.com/petobens/dotfiles/blob/master/vim/init.vim
+  - HiInterestingWord
+- Steve Losh's vimrc
+  - https://bitbucket.org/sjl/dotfiles/src/default/vim/vimrc
+  - Clean up screen: nnoremap U :syntax sync fromstart<cr>:redraw!<cr>

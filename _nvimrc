@@ -5,22 +5,52 @@ set termguicolors
 " Custom cursor in terminal (note: may not work in tmux - see faq to fix)
 let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
 
+" NOTE: Gui config in
+" - Mac: ~/Library/Preferences/glrnvim.yml (mac)
+" - Linux: ~/.config/glrnvim.yml
+" - Should be symlinked, with real path ~/VimConfig
+"
+" Font options: https://github.com/powerline/fonts.git
+" Current font: Source Code Pro for Powerline : h15
+
 set nocompatible
 
 " TODO:
+" - Fix slow scrolling (probably semshi)
+"   - Also slow to switch files
+" - Fix parameter motion
 " - YankRing / fzf registers / etc
+"   - https://github.com/vim-scripts/YankRing.vim
+"     - Overrides some basic register management
+"   - EasyClip - stores separate buffer of yanks
+"     - https://github.com/davidosomething/EasyClipRing.vim/
+"     - Maybe EasyClip + FZF -
+"       https://github.com/jasonij/dotfiles/blob/master/init.vim
+"   - https://github.com/maxbrunsfeld/vim-yankstack - probably not
+"   - NeoYank - requires deoplete, but seems much cleaner
+"   - https://github.com/junegunn/vim-peekaboo
+"     - Need to enhance
+"   - https://github.com/bfredl/nvim-miniyank
+"   - Denite probably supports a yank history - https://github.com/amalbuquerque/vim-dotfiles/blob/master/_vimrc
 " - Make vista auto-start and auto-update, or remove
 "   - Vista icons
+"   - Show nearest function in statusline
 " - Notify hammerspoon on start
-" - Take lazy loading from https://github.com/petobens/dotfiles/blob/master/vim/init.vim
-" - Semshi keybindings for e.g. next instance
-" - zsh prompt (see todos)
-"
+" - Go through coc config in https://github.com/taigacute/ThinkVim
+"   - https://github.com/neoclide/coc.nvim/wiki/Language-servers#python
+"   - autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
 " - Code search
 "   - https://searchcode.com/
 "   - http://opensearch.krugle.org/
+" - % for python - https://github.com/okcompute/vim-python-match
+" - Show keybindings - https://github.com/liuchengxu/vim-which-key
+" - Select any of several blocks - https://github.com/rhysd/vim-textobj-anyblock
+" - Surround
+"   - https://github.com/rhysd/vim-operator-surround
+"   - https://github.com/machakann/vim-sandwich
 
 " - hub - github
+"   - Fugitive plugin
 "   - Get working with ghe
 
 " Hammerspoon
@@ -50,8 +80,6 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
   " Required:
   call dein#add('~/.nvim/dein/repos/github.com/Shougo/dein.vim')
 
-  " call dein#add('tpope/vim-repeat')
-
   " call dein#add('neoclide/coc.nvim', {'merge':0, 'build': './install.sh nightly'})
 
   " call dein#add('Shougo/deoplete.nvim')
@@ -76,13 +104,16 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
   " call dein#add('cohama/lexima.vim')
   " call dein#add('tmsvg/pear-tree')
   call dein#add('jiangmiao/auto-pairs')
-  call dein#add('numirias/semshi', {'on_ft': 'python'})
 
-  " Alternative: AndrewRadev/splitjoin.vim - more popular, doesn't seem to
+  " Alternative: AndrewRadev/splitjoin.vim - more popular, but doesn't seem to
   " indent quite correctly
   call dein#add('FooSoft/vim-argwrap')
 
   if g:file_finder == 'denite'
+    " TODO: Consider yank history - https://github.com/Shougo/neoyank.vim
+    " TODO: https://github.com/petobens/dotfiles/blob/master/vim/init.vim for
+    " other plugins
+    " TODO: Spell filter, denite suggest, etc from other plugins link above
     call dein#add('Shougo/denite.nvim')
   elseif g:file_finder == 'fzf'
     " Installed via `brew install fzf`
@@ -98,20 +129,10 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
 
   call dein#add('sbdchd/neoformat')
 
-  " Alternatives:
-  " - https://github.com/jeetsukumaran/vim-pythonsense
-  "   - Has many more motions
-  " - vim-python-motions
-  "   - Slightly more precise
-  " - vim-textobj-user has explicit function/class mappings
-  " Git: Changed map to noremap for easymotion bindings
-  " ,P and ,S - easymotion for top level items
-  call dein#add('tweekmonster/braceless.vim')
-
   " Text objects
   call dein#add('kana/vim-textobj-user')
   " e.g. vaf, vac (rebound below to vaC, conflicts with tcomment select comment)
-  call dein#add('bps/vim-textobj-python')
+  call dein#add('bps/vim-textobj-python', {'on_ft': 'python'})
   " Alternative: https://github.com/vim-scripts/argtextobj.vim
   " Older: call dein#add('vim-scripts/Parameter-Text-Objects')
   " e.g. vi, - select parameter
@@ -131,7 +152,9 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
   call dein#add('mhinz/vim-signify')
   call dein#add('tpope/vim-fugitive')
 
-  call dein#add('rhysd/git-messenger.vim')
+  call dein#add('rhysd/git-messenger.vim', {
+        \ 'on_cmd' : 'GitMessenger',
+        \ 'on_map' : '<Plug>(git-messenger)'})
 
   " Lots of text objects - learn or replace with vim-textobj-*
   " call dein#add('wellle/targets.vim')
@@ -144,14 +167,16 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
 
   " call dein#add('kien/ctrlp.vim')
   " Alternative: undotree
-  call dein#add('sjl/gundo.vim')
+  " Alternative: gundo
+  " Forks and extends gundo
+  call dein#add('simnalamburt/vim-mundo', {'on_cmd' : 'MundoToggle'})
   call dein#add('vim-scripts/swap-parameters')
-  " call dein#add('scrooloose/syntastic')
+  " Alternative: https://github.com/tyru/caw.vim
   call dein#add('tomtom/tcomment_vim')
   call dein#add('tpope/vim-abolish')
   " call dein#add('Lokaltog/vim-easymotion')
   call dein#add('easymotion/vim-easymotion')
-  call dein#add('hynek/vim-python-pep8-indent')
+  call dein#add('hynek/vim-python-pep8-indent', {'on_ft': 'python'})
   call dein#add('tpope/vim-ragtag')
   call dein#add('tpope/vim-repeat')
   call dein#add('tpope/vim-surround')
@@ -166,6 +191,7 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
   " call dein#add('junegunn/vim-peekaboo')
   " Lots of clipboard changes
   " Alternative: YankRing
+  " Disadvantage: Seems to replace tons of functionality
   " call dein#add('svermeulen/vim-easyclip')
 
   " Show open buffers, vertically
@@ -185,30 +211,89 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
   " call dein#add('ncm2/float-preview.nvim')
 
   call dein#add('kana/vim-arpeggio')
-  call dein#add('davidhalter/jedi-vim')
+  call dein#add('davidhalter/jedi-vim', {'on_ft': 'python'})
   call dein#add('w0rp/ale')
 
   " Note: Requires ctags with json support - e.g.
   " brew install --HEAD --with-jansson universal-ctags/universal-ctags/universal-ctags
   " Guide: http://liuchengxu.org/posts/vista.vim/
-  call dein#add('liuchengxu/vista.vim')
+  call dein#add('liuchengxu/vista.vim', {'on_ft': 'python'})
 
   " Consider: https://github.com/haya14busa/incsearch-easymotion.vim
   call dein#add('haya14busa/incsearch.vim')
+
+  " Highlight braces surrounding the cursor. Note: builtin matchParen.vim does
+  " this, but only shows when cursor is on a brace
+  call dein#add('Yggdroot/hiPairs')
+  " Show a vertical line around indents - recommended by ayu-theme/ayu-vim
+  " Unneeded: Braceless +highlight is handier
+  " call dein#add('Yggdroot/indentLine')
+
+  "
+  " Python
+  "
+
+  " Alternative: Can use Yggdroot/indentLine to sort of replace +highlight
+  " Alternatives:
+  " - https://github.com/jeetsukumaran/vim-pythonsense
+  "   - Has many more motions
+  " - vim-python-motions
+  "   - Slightly more precise
+  " - vim-textobj-user has explicit function/class mappings
+  " Git: Changed map to noremap for easymotion bindings
+  " ,P and ,S - easymotion for top level items
+  call dein#add('tweekmonster/braceless.vim', {'on_ft': 'python'})
+
+  " call dein#add('numirias/semshi', {'on_ft': 'python'})
+  " TODO: Consider tmhedberg/SimpylFold
+  call dein#add('vim-python/python-syntax', {'on_ft' : 'python'})
 
   " Use pytest.vim instead - only works for pytest, but has way more features
   " call dein#add('tpope/vim-dispatch')
   " call dein#add('janko/vim-test')
   " Alternative: https://github.com/w0rp/python_tools
   " Alternative: NeoMake
-  call dein#add('alfredodeza/pytest.vim')
+  call dein#add('alfredodeza/pytest.vim', {'on_cmd': 'Pytest'})
+
+  "
+  " Vim
+  "
+
+  call dein#add('chrisbra/Colorizer', {'on_cmd': 'ColorToggle'})
+
+  "
+  " Other
+  "
 
   call dein#add('vimwiki/vimwiki')
 
-  call dein#add('wsdjeg/FlyGrep.vim')
-
   call dein#add('vim-airline/vim-airline')
+  " Changes:
+  " Update s:gui09 = "#d08770" to #b07780
   call dein#add('vim-airline/vim-airline-themes')
+
+  call dein#add('plasticboy/vim-markdown', {'on_ft' : 'markdown'})
+
+  "
+  " Colorschemes
+  "
+
+  " While choosing, enable these two - otherwise disable
+  " call dein#add('xolox/vim-colorscheme-switcher')
+  " call dein#add('flazz/vim-colorschemes')
+  " call dein#add('sonph/onehalf', {'rtp': 'vim/'})
+  " call dein#add('chriskempson/base16-vim')
+  " call dein#add('nanotech/jellybeans.vim')
+  " nnoremap H :PrevColorScheme<CR>
+  " nnoremap L :NextColorScheme<CR>
+  " Notes:
+  " gruvbox: Worth considering if going to the work to remove the yellow
+  " ayu: Might be ok, a little dark
+  " jellybeans: With lighter background might be ok - see below
+  " tomorrow-night-eighties: Not bad, slightly too low contrast
+  " Idea: Try jellybeans then loading jbrewer_desert - get special features and
+  " better defaults, but keep readaibility. Need to resolve a few key
+  " differences first
 
   " Probably need to wait for language server for this
   " Code edit: Use ~/VimConfig/python-imports.cfg instead of default
@@ -231,6 +316,10 @@ syntax enable
 " }
 
 " Basics {
+  " let g:jellybeans_overrides = {
+  "       \     'background': { 'guibg': '2d2d2d' },
+  "       \ }
+  " colorscheme jellybeans
   colorscheme jbrewer_desert
 
   set nocompatible
@@ -266,7 +355,7 @@ syntax enable
 
   set vb t_vb=
 
-  set formatoptions=croqln
+  set formatoptions=croqlnj
   " set cursorline
 
   " set completeopt=menu,preview
@@ -896,6 +985,28 @@ syntax enable
   autocmd FileType python BracelessEnable +indent +highlight
 " }
 
+" hiPairs {
+  " let g:hiPairs_enable_matchParen = 0
+  " let g:hiPairs_stopline_more = 200
+  let g:hiPairs_hl_matchPair = {
+        \ 'term'    : 'underline,bold',
+        \ 'cterm'   : 'underline,bold',
+        \ 'ctermfg' : 'NONE',
+        \ 'ctermbg' : 'NONE',
+        \ 'gui'     : 'underline,bold',
+        \ 'guifg'   : 'NONE',
+        \ 'guibg'   : '#8f810b',
+        \ }
+" }
+
+" indentLine {
+  " Config from ayu-theme/ayu-vim - chars didn't copy correctly from markdown
+  let g:indentLine_char = ''
+  let g:indentLine_first_char = ''
+  let g:indentLine_showFirstIndentLevel = 1
+  let g:indentLine_setColors = 0
+" }
+
 " vim-signify {
   let g:signify_vcs_list = ['git']
 
@@ -1035,6 +1146,13 @@ syntax enable
 
 " vista.vim {
   let g:vista_fzf_preview = ['right:50%']
+  let g:vista#renderer#enable_icon = 1
+  " let g:vista_icon_indent = ["╰─▸ ", "├─▸ "]
+  let g:vista_icon_indent = ["▸ ", ""]
+  let g:vista#renderer#icons = {
+  \   "function": "\uf794",
+  \   "variable": "\uf71b",
+  \  }
 " }
 
 " semshi {
@@ -1044,7 +1162,7 @@ syntax enable
     hi semshiSelected        guifg=#ffffff guibg=#6700af
     hi semshiSelected        guifg=#ffffff guibg=#77003f
   endfunction
-  autocmd FileType python call SemshiCustomHighlights()
+  " autocmd FileType python call SemshiCustomHighlights()
 
 " }
 
@@ -1200,6 +1318,9 @@ syntax enable
   call airline#parts#define_minwidth('virtualenv', 120)
   call airline#parts#define_minwidth('fileencoding', 120)
   call airline#parts#define_minwidth('fileformat', 120)
+
+  let g:airline_powerline_fonts = 1
+  let g:airline_skip_empty_sections = 1
 
   " Theme: Notes:
   " These seem ok at an initial pass
