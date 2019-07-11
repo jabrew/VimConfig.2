@@ -270,6 +270,9 @@ endif
 " Base desert {
 
 hi Normal	guifg=White guibg=grey20
+" In NeoVim, Whitespace defaults to NonText - which isn't quite right. Keep the
+" foreground, but take the default background
+hi Whitespace	guifg=LightBlue guibg=grey20
 
 " highlight groups
 hi Cursor	guibg=indianred guifg=khaki

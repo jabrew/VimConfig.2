@@ -16,9 +16,6 @@ let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
 set nocompatible
 
 " TODO:
-" - Fix slow scrolling (probably semshi)
-"   - Also slow to switch files
-" - Fix parameter motion
 " - YankRing / fzf registers / etc
 "   - https://github.com/vim-scripts/YankRing.vim
 "     - Overrides some basic register management
@@ -27,11 +24,14 @@ set nocompatible
 "     - Maybe EasyClip + FZF -
 "       https://github.com/jasonij/dotfiles/blob/master/init.vim
 "   - https://github.com/maxbrunsfeld/vim-yankstack - probably not
-"   - NeoYank - requires deoplete, but seems much cleaner
+"   - NeoYank - requires denite, but seems much cleaner
 "   - https://github.com/junegunn/vim-peekaboo
-"     - Need to enhance
+"     - Need to enhance - only does current registers
 "   - https://github.com/bfredl/nvim-miniyank
+"     - Supports denite natively
+"     - https://github.com/bfredl/nvim-miniyank/issues/19
 "   - Denite probably supports a yank history - https://github.com/amalbuquerque/vim-dotfiles/blob/master/_vimrc
+"   - Denite: Can combine sources
 " - Make vista auto-start and auto-update, or remove
 "   - Vista icons
 "   - Show nearest function in statusline
@@ -224,7 +224,8 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
 
   " Highlight braces surrounding the cursor. Note: builtin matchParen.vim does
   " this, but only shows when cursor is on a brace
-  call dein#add('Yggdroot/hiPairs')
+  " Note: Disabled, slows down scrolling significantly
+  " call dein#add('Yggdroot/hiPairs')
   " Show a vertical line around indents - recommended by ayu-theme/ayu-vim
   " Unneeded: Braceless +highlight is handier
   " call dein#add('Yggdroot/indentLine')
@@ -244,7 +245,7 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
   " ,P and ,S - easymotion for top level items
   call dein#add('tweekmonster/braceless.vim', {'on_ft': 'python'})
 
-  " call dein#add('numirias/semshi', {'on_ft': 'python'})
+  call dein#add('numirias/semshi', {'on_ft': 'python'})
   " TODO: Consider tmhedberg/SimpylFold
   call dein#add('vim-python/python-syntax', {'on_ft' : 'python'})
 
@@ -649,16 +650,16 @@ syntax enable
     set title
     set laststatus=2
 
-    " Broken down into easily includeable segments
-    set statusline=%<%f\   " Filename
-    set statusline+=%w%h%m%r " Options
-    "set statusline+=%{fugitive#statusline()} "  Git Hotness
-    set statusline+=\ [%{&ff}/%{strlen(&fenc)?&fenc:'noenc'}/%{strlen(&ft)?&ft:'notype'}]            " filetype
-    set statusline+=\ [%{getcwd()}]          " current dir
-    " set statusline+=\ %#Error#%{SyntasticStatuslineFlag()}%*
-    set statusline+=\ %#Error#%{AleStatusLineFlag()}%*
-    "set statusline+=\ [A=\%03.3b/H=\%02.2B] " ASCII / Hexadecimal value of char
-    set statusline+=%=%-14.(%l/%L,%c%V%)\ %p%%  " Right aligned file nav info
+    " " Broken down into easily includeable segments
+    " set statusline=%<%f\   " Filename
+    " set statusline+=%w%h%m%r " Options
+    " "set statusline+=%{fugitive#statusline()} "  Git Hotness
+    " set statusline+=\ [%{&ff}/%{strlen(&fenc)?&fenc:'noenc'}/%{strlen(&ft)?&ft:'notype'}]            " filetype
+    " set statusline+=\ [%{getcwd()}]          " current dir
+    " " set statusline+=\ %#Error#%{SyntasticStatuslineFlag()}%*
+    " set statusline+=\ %#Error#%{AleStatusLineFlag()}%*
+    " "set statusline+=\ [A=\%03.3b/H=\%02.2B] " ASCII / Hexadecimal value of char
+    " set statusline+=%=%-14.(%l/%L,%c%V%)\ %p%%  " Right aligned file nav info
 
     set rulerformat=%30(%=\:b%n\ %y%m%r%w\ %l/%L,%c%V\ %P%)
 " }
@@ -905,16 +906,16 @@ syntax enable
 " }
 
 " ale {
-  function! AleStatusLineFlag()
-    let counts = ale#statusline#Count(bufnr(''))
-    let errors = counts['error']
-    let warnings = counts['warning']
-    if errors > 0 || warnings > 0
-      return 'err: ' . errors . ', warn: ' . warnings . ' '
-    else
-      return ""
-    endif
-  endfunction
+  " function! AleStatusLineFlag()
+  "   let counts = ale#statusline#Count(bufnr(''))
+  "   let errors = counts['error']
+  "   let warnings = counts['warning']
+  "   if errors > 0 || warnings > 0
+  "     return 'err: ' . errors . ', warn: ' . warnings . ' '
+  "   else
+  "     return ""
+  "   endif
+  " endfunction
 
   " Note: Show errors with :lopen
 
@@ -985,19 +986,19 @@ syntax enable
   autocmd FileType python BracelessEnable +indent +highlight
 " }
 
-" hiPairs {
-  " let g:hiPairs_enable_matchParen = 0
-  " let g:hiPairs_stopline_more = 200
-  let g:hiPairs_hl_matchPair = {
-        \ 'term'    : 'underline,bold',
-        \ 'cterm'   : 'underline,bold',
-        \ 'ctermfg' : 'NONE',
-        \ 'ctermbg' : 'NONE',
-        \ 'gui'     : 'underline,bold',
-        \ 'guifg'   : 'NONE',
-        \ 'guibg'   : '#8f810b',
-        \ }
-" }
+" " hiPairs {
+"   " let g:hiPairs_enable_matchParen = 0
+"   " let g:hiPairs_stopline_more = 200
+"   let g:hiPairs_hl_matchPair = {
+"         \ 'term'    : 'underline,bold',
+"         \ 'cterm'   : 'underline,bold',
+"         \ 'ctermfg' : 'NONE',
+"         \ 'ctermbg' : 'NONE',
+"         \ 'gui'     : 'underline,bold',
+"         \ 'guifg'   : 'NONE',
+"         \ 'guibg'   : '#8f810b',
+"         \ }
+" " }
 
 " indentLine {
   " Config from ayu-theme/ayu-vim - chars didn't copy correctly from markdown
@@ -1156,14 +1157,12 @@ syntax enable
 " }
 
 " semshi {
-
   function SemshiCustomHighlights()
     " Defaults at https://github.com/numirias/semshi
     hi semshiSelected        guifg=#ffffff guibg=#6700af
     hi semshiSelected        guifg=#ffffff guibg=#77003f
   endfunction
-  " autocmd FileType python call SemshiCustomHighlights()
-
+  autocmd FileType python call SemshiCustomHighlights()
 " }
 
 " fzf {
@@ -1321,6 +1320,9 @@ syntax enable
 
   let g:airline_powerline_fonts = 1
   let g:airline_skip_empty_sections = 1
+
+  " Whitespace detection in vimrc is broken, since whitespace can be intentional
+  au filetype vim silent! call airline#extensions#whitespace#disable()
 
   " Theme: Notes:
   " These seem ok at an initial pass
