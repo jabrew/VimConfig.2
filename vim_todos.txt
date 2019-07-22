@@ -5,6 +5,10 @@
 - Learn motions for e.g. class, function
 - TODO: Consider https://github.com/rhysd/clever-f.vim
 - tcomment - map textobj for comment, or switch plugins
+- Select any of several blocks - https://github.com/rhysd/vim-textobj-anyblock
+  - e.g. vib => select inner () or [] or {} or ...
+  - Alternative: https://github.com/osyo-manga/vim-textobj-multiblock
+  - Alternative: https://github.com/thinca/vim-textobj-between
 
 = Git =
 
@@ -42,7 +46,7 @@
   - https://www.reddit.com/r/vim/comments/4d2fos/if_you_use_tags_whats_your_workflow_like/
     - tags command can take a regex if prepended with / - so e.g. can use nnoremap <buffer> <C-]> :tjump /<c-r>=expand('<cword>')<CR><CR> to find tags including module names
 
-= File Explorer =
+= File Explorer / Tags =
 
 - Maybe defer?
   - https://github.com/francoiscabrol/ranger.vim
@@ -52,6 +56,9 @@
     - https://github.com/jlesquembre/dotfiles/blob/746dc229305f9c447dff98f8240371ecdb57e032/nvim/init.vim#L1126-L1187
   - Maybe nerdtree
     - https://github.com/albfan/nerdtree-file-filter-plugin
+- Make vista auto-start and auto-update, or remove
+  - Vista icons
+  - Show nearest function in statusline
 
 = Navigation =
 
@@ -101,6 +108,7 @@
 - Zsh
   - Prompt: https://github.com/edkolev/promptline.vim
 - Powerline
+  - Try in large repo to isolate slowness
   - Zsh: see newline - https://github.com/bhilburn/powerlevel9k
   - Need to compile
   https://powerline.readthedocs.io/en/master/troubleshooting.html (seems slow otherwise)
@@ -114,8 +122,8 @@
 
 = Todo for later =
 
+- Try pairtree again
 - Profiling - e.g. debug slow vimrc - https://github.com/bling/minivimrc
-- Gtags - tag manager (gnu global). denite-gtags
 - Voom - outliner, partial code runner - https://github.com/vim-scripts/VOoM
 - Yank code - adds useful extras for e.g. pasting to slack - https://github.com/AaronLasseigne/yank-code
 - YankRing alternatives
@@ -125,3 +133,6 @@
 - Denite: Colorscheme for mode
 - https://vimawesome.com/plugin/vim-autoswap
 - Custom alacritty icon (e.g. for wiki) - https://www.reddit.com/r/Crostini/comments/arbuag/alacritty_terminal/
+- Fade inactive windows - https://github.com/TaDaa/vimade
+  - Need to set NormalNC
+- Vulture: Detect dead python code

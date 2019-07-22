@@ -16,38 +16,10 @@ let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
 set nocompatible
 
 " TODO:
-" - YankRing / fzf registers / etc
-"   - https://github.com/vim-scripts/YankRing.vim
-"     - Overrides some basic register management
-"   - EasyClip - stores separate buffer of yanks
-"     - https://github.com/davidosomething/EasyClipRing.vim/
-"     - Maybe EasyClip + FZF -
-"       https://github.com/jasonij/dotfiles/blob/master/init.vim
-"   - https://github.com/maxbrunsfeld/vim-yankstack - probably not
-"   - NeoYank - requires denite, but seems much cleaner
-"   - https://github.com/junegunn/vim-peekaboo
-"     - Need to enhance - only does current registers
-"   - https://github.com/bfredl/nvim-miniyank
-"     - Supports denite natively
-"     - https://github.com/bfredl/nvim-miniyank/issues/19
-"   - Denite probably supports a yank history - https://github.com/amalbuquerque/vim-dotfiles/blob/master/_vimrc
-"   - Denite: Can combine sources
-" - Make vista auto-start and auto-update, or remove
-"   - Vista icons
-"   - Show nearest function in statusline
-" - Notify hammerspoon on start
-" - Go through coc config in https://github.com/taigacute/ThinkVim
-"   - https://github.com/neoclide/coc.nvim/wiki/Language-servers#python
-"   - autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
-" - Code search
-"   - https://searchcode.com/
-"   - http://opensearch.krugle.org/
-" - % for python - https://github.com/okcompute/vim-python-match
-" - Show keybindings - https://github.com/liuchengxu/vim-which-key
-" - Select any of several blocks - https://github.com/rhysd/vim-textobj-anyblock
-" - Surround
-"   - https://github.com/rhysd/vim-operator-surround
-"   - https://github.com/machakann/vim-sandwich
+" - Up arrow to lookback locally only - https://superuser.com/questions/446594/separate-up-arrow-lookback-for-local-and-global-zsh-history/691603
+" - https://github.com/junegunn/fzf/wiki/examples
+"   - Chrome history
+"   - cd
 
 " - hub - github
 "   - Fugitive plugin
@@ -69,6 +41,12 @@ set runtimepath+=~/VimConfig
 " denite - supports resume, overall more configurable
 let g:file_finder = 'fzf'
 
+" ncm2, coc
+" ncm2 - works
+" coc - theoretically way stronger, fails simple cases - e.g. completions after
+" `gnv ~/test.py`
+let g:autocomplete_engine = 'ncm2'
+
 " Required:
 " Note: dein#load_state should be the if condition, but it doesn't seem to work
 " call dein#load_state('~/.nvim/dein/')
@@ -80,24 +58,32 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
   " Required:
   call dein#add('~/.nvim/dein/repos/github.com/Shougo/dein.vim')
 
-  " call dein#add('neoclide/coc.nvim', {'merge':0, 'build': './install.sh nightly'})
-
   " call dein#add('Shougo/deoplete.nvim')
   " call dein#add('zchee/deoplete-jedi')
 
-  call dein#add('ncm2/ncm2')
-  call dein#add('roxma/nvim-yarp')
-  " Alternative: https://github.com/HansPinckaers/ncm2-jedi (may be faster, but
-  " has less additional information)
-  call dein#add('ncm2/ncm2-jedi')
-  call dein#add('ncm2/ncm2-ultisnips')
-  call dein#add('ncm2/ncm2-bufword')
-  call dein#add('ncm2/ncm2-tagprefix')
-  " TODO: Get this working (maybe with deoplete). Build: Try install vscode and
-  " finding python binary from there
-  " call dein#add('autozimu/LanguageClient-neovim', {
-  "       \ 'build': 'bash install.sh', 'rev': 'next'})
-  call dein#add('ncm2/float-preview.nvim')
+  if g:autocomplete_engine == 'ncm2'
+    call dein#add('ncm2/ncm2')
+    call dein#add('roxma/nvim-yarp')
+    " Alternative: https://github.com/HansPinckaers/ncm2-jedi (may be faster,
+    " but has less additional information)
+    call dein#add('ncm2/ncm2-jedi')
+    call dein#add('ncm2/ncm2-ultisnips')
+    call dein#add('ncm2/ncm2-bufword')
+    call dein#add('ncm2/ncm2-tagprefix')
+    " TODO: Get this working (maybe with deoplete). Build: Try install vscode
+    " and finding python binary from there
+    " call dein#add('autozimu/LanguageClient-neovim', {
+    "       \ 'build': 'bash install.sh', 'rev': 'next'})
+    " Show params in a floating window - without moving text like regular
+    " preview
+    call dein#add('ncm2/float-preview.nvim')
+  elseif g:autocomplete_engine == 'coc'
+    call dein#add(
+          \ 'neoclide/coc.nvim',
+          \ {'merge': 0, 'build': './install.sh nightly'})
+  else
+    echoerr "Unknown autocomplete engine " . g:autocomplete_engine
+  endif
 
   call dein#add('SirVer/ultisnips')
 
@@ -157,7 +143,7 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
         \ 'on_map' : '<Plug>(git-messenger)'})
 
   " Lots of text objects - learn or replace with vim-textobj-*
-  " call dein#add('wellle/targets.vim')
+  call dein#add('wellle/targets.vim')
   call dein#add('bkad/CamelCaseMotion')
 
   " Alternative: lh-tags, easytags, watch script, git rebase hook
@@ -191,8 +177,11 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
   " call dein#add('junegunn/vim-peekaboo')
   " Lots of clipboard changes
   " Alternative: YankRing
+  " Alternative: easyclip is split into several plugins - vim-subversive,
+  " vim-yoink, vim-cutlass
   " Disadvantage: Seems to replace tons of functionality
   " call dein#add('svermeulen/vim-easyclip')
+  call dein#add('bfredl/nvim-miniyank')
 
   " Show open buffers, vertically
   " Other options: horizontal tagbar
@@ -206,9 +195,6 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
 
   " Command-mode keymaps
   call dein#add('vim-utils/vim-husk')
-
-  " Shows preview in a floating window - doesn't move text (ncm2 or deoplete)
-  " call dein#add('ncm2/float-preview.nvim')
 
   call dein#add('kana/vim-arpeggio')
   call dein#add('davidhalter/jedi-vim', {'on_ft': 'python'})
@@ -229,6 +215,10 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
   " Show a vertical line around indents - recommended by ayu-theme/ayu-vim
   " Unneeded: Braceless +highlight is handier
   " call dein#add('Yggdroot/indentLine')
+  " Note: May be slow to move cursor horizontally
+  " Note: Distracting in insert mode (parens flicker). Ideally: disable in
+  " insert mode
+  " call dein#add('djdt/pyparens.nvim')
 
   "
   " Python
@@ -403,90 +393,106 @@ syntax enable
 " }
 
 " Keybindings {
-    " Build keybinds
-    let g:quickFixOpen = 0
-    function! ToggleQuickFix()
-        if g:quickFixOpen
-            let g:quickFixOpen = 0
-            ccl
-        else
-            let g:quickFixOpen = 1
-            belowright copen
-        endif
-    endfunction
-    nnoremap <F2> :cN<CR>
-    nnoremap <F3> :cn<CR>
-    nnoremap <F4> :silent exe "call ToggleQuickFix()"<CR>
-
-    " General keybinds
-    if g:is_tabbed == 1
-      nnoremap <C-P> :tabp<CR>
-      nnoremap <C-N> :tabn<CR>
-      nnoremap <Leader>p :bp<CR>
-      nnoremap <Leader>n :bn<CR>
-      " nnoremap <M-P> :bp<CR>
-      " nnoremap <M-N> :bn<CR>
-      " nnoremap Ã° :bp<CR>
-      " nnoremap Ã® :bn<CR>
+  " Build keybinds
+  let g:quickFixOpen = 0
+  function! ToggleQuickFix()
+    if g:quickFixOpen
+      let g:quickFixOpen = 0
+      ccl
     else
-      nnoremap <silent> <C-P> :MBEbp<CR>
-      nnoremap <silent> <C-N> :MBEbn<CR>
-      nnoremap <silent> <Leader>p :tabp<CR>
-      nnoremap <silent> <Leader>n :tabn<CR>
-      " nnoremap <M-p> :tabp<CR>
-      " nnoremap <M-n> :tabn<CR>
-      " nnoremap Ã° :tabp<CR>
-      " nnoremap Ã® :tabn<CR>
+      let g:quickFixOpen = 1
+      belowright copen
     endif
-    "nmap <C-S> ;A<CR>
+  endfunction
+  nnoremap <F2> :cN<CR>
+  nnoremap <F3> :cn<CR>
+  nnoremap <F4> :silent exe "call ToggleQuickFix()"<CR>
 
-    " Swap ; and : in normal mode
-    nnoremap : ;
-    nnoremap ; :
-    vnoremap : ;
-    vnoremap ; :
+  " General keybinds
+  if g:is_tabbed == 1
+    nnoremap <C-P> :tabp<CR>
+    nnoremap <C-N> :tabn<CR>
+    nnoremap <Leader>p :bp<CR>
+    nnoremap <Leader>n :bn<CR>
+    " nnoremap <M-P> :bp<CR>
+    " nnoremap <M-N> :bn<CR>
+    " nnoremap Ã° :bp<CR>
+    " nnoremap Ã® :bn<CR>
+  else
+    nnoremap <silent> <C-P> :MBEbp<CR>
+    nnoremap <silent> <C-N> :MBEbn<CR>
+    nnoremap <silent> <Leader>p :tabp<CR>
+    nnoremap <silent> <Leader>n :tabn<CR>
+    " nnoremap <M-p> :tabp<CR>
+    " nnoremap <M-n> :tabn<CR>
+    " nnoremap Ã° :tabp<CR>
+    " nnoremap Ã® :tabn<CR>
+  endif
+  "nmap <C-S> ;A<CR>
 
-    " inoremap <C-e> <C-o>A
-    " Overridden below
-    " inoremap <C-y> <C-o>I
+  " Swap ; and : in normal mode
+  nnoremap : ;
+  nnoremap ; :
+  vnoremap : ;
+  vnoremap ; :
 
-    noremap <M-g> <C-U>
-    noremap © <C-U>
-    noremap <M-b> <C-D>
-    noremap ∫ <C-D>
+  " inoremap <C-e> <C-o>A
+  " Overridden below
+  " inoremap <C-y> <C-o>I
 
-    nnoremap <silent> <leader>h :silent :nohlsearch<CR>
+  noremap <M-g> <C-U>
+  noremap © <C-U>
+  noremap <M-b> <C-D>
+  noremap ∫ <C-D>
 
-    " :tjump instead of :tag
-    nnoremap <C-]> g<C-]>
+  nnoremap <silent> <leader>h :silent :nohlsearch<CR>
 
-    " Swap ' and ` (default ` jumps to mark line and column, while ' just jumps to line, this makes the more useful binding
-    " ')
-    nnoremap ' `
-    nnoremap ` '
+  " :tjump instead of :tag
+  nnoremap <C-]> g<C-]>
 
-    nnoremap <Up> <C-W>k
-    nnoremap <Down> <C-W>j
-    nnoremap <Left> <C-W>h
-    nnoremap <Right> <C-W>l
+  " Swap ' and ` (default ` jumps to mark line and column, while ' just jumps to line, this makes the more useful binding
+  " ')
+  nnoremap ' `
+  nnoremap ` '
 
-    " Window size keybindings
-    " TODO: Move into mac specific
-    if g:is_wiki
-      " TODO: Need to also resize the window
-      " NeoVim: Lines 40, columns 86
-      " MacVim: Lines 40, columns 84
-      nnoremap <silent> <Leader>wn :silent !hs -c "windowPosition('cur', 'right', 'bottom', 778, 786)"<CR>
-      silent !hs -c "windowPosition('cur', 'right', 'bottom', 778, 786)"
-      " self.proc_by_name('VimWiki'), 759, 809),
-    else
-      " Lines 42, columns 117
-      nnoremap <silent> <Leader>wn :silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"<CR>
-      nnoremap <silent> <Leader>wl :silent !hs -c "windowPosition('cur', 'center', 'top', 1804, 976, 234)"<CR>
-      " silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"
-      " Note: equalalways seems to not quite equalize windows
-      silent !hs -c "windowPosition('cur', 'center', 'top', 0, 0, -139)"
-    endif
+  nnoremap <Up> <C-W>k
+  nnoremap <Down> <C-W>j
+  nnoremap <Left> <C-W>h
+  nnoremap <Right> <C-W>l
+
+  " Window size keybindings
+  " TODO: Move into mac specific
+  " TODO: Consider moving into an init function align with notifyWindowActive
+  if g:is_wiki
+    " TODO: Need to also resize the window
+    " NeoVim: Lines 40, columns 86
+    " MacVim: Lines 40, columns 84
+    nnoremap <silent> <Leader>wn :silent !hs -c "windowPosition('cur', 'right', 'bottom', 778, 786)"<CR>
+    silent !hs -c "windowPosition('cur', 'right', 'bottom', 778, 786)"
+    " self.proc_by_name('VimWiki'), 759, 809),
+  else
+    " Lines 42, columns 117
+    nnoremap <silent> <Leader>wn :silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"<CR>
+    nnoremap <silent> <Leader>wl :silent !hs -c "windowPosition('cur', 'center', 'top', 1804, 976, 234)"<CR>
+    " silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"
+    " Note: equalalways seems to not quite equalize windows
+    silent !hs -c "windowPosition('cur', 'center', 'top', 0, 0, -139)"
+  endif
+
+  " Notify hammerspoon the window is active
+  " TODO: Consider also notifying hammerspoon on WinEnter
+  if v:vim_did_enter
+    silent !hs -c "notifyWindowActive()"
+  else
+    au VimEnter * silent !hs -c "notifyWindowActive()"
+  endif
+" }
+
+" netrw {
+  " When accidentially opening netrw windows, this makes them close as soon as
+  " another window is activated. May need to close/open MBE
+  let g:netrw_fastbrowse = 0
+  autocmd FileType netrw setl bufhidden=wipe
 " }
 
 " glrnvim config {
@@ -508,6 +514,8 @@ syntax enable
   nnoremap <Space>cy "*y
   nnoremap <Space>cp "*p
   nnoremap <Space>cP "*P
+
+  " More (c) bindings under nvim-miniyank
 
   " Convert slashes to backslashes for Windows.
   if has('win32')
@@ -781,27 +789,29 @@ syntax enable
 " Coc seems great, but fails simple use cases with python e.g. from a non-~
 " directory, open ~/test.py : Autocomplete never works
 " To try: :CocStart after opening python file
-" " coc {
-"   " inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-"
-"   " This immediately exits :Command completion menu once pyls is loaded
-"   " inoremap <silent><expr> <TAB>
-"   "     \ pumvisible() ? "\<C-n>" :
-"   "     \ <SID>check_back_space() ? "\<TAB>" :
-"   "     \ coc#refresh()
-"
-"   let g:python3_host_prog = "/usr/local/bin/python3"
-"
-"   function! s:check_back_space() abort
-"     let col = col('.') - 1
-"     return !col || getline('.')[col - 1]  =~# '\s'
-"   endfunction
-"
-"   inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-"   inoremap <silent><expr> <C-X><C-O> coc#refresh()
-"
-"   let g:coc_start_at_startup = 1
-" " }
+" coc {
+  if g:autocomplete_engine == 'coc'
+    " inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+
+    " This immediately exits :Command completion menu once pyls is loaded
+    " inoremap <silent><expr> <TAB>
+    "     \ pumvisible() ? "\<C-n>" :
+    "     \ <SID>check_back_space() ? "\<TAB>" :
+    "     \ coc#refresh()
+
+    let g:python3_host_prog = "/usr/local/bin/python3"
+
+    function! s:check_back_space() abort
+      let col = col('.') - 1
+      return !col || getline('.')[col - 1]  =~# '\s'
+    endfunction
+
+    inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+    inoremap <silent><expr> <C-X><C-O> coc#refresh()
+
+    let g:coc_start_at_startup = 1
+  endif
+" }
 
 " May be good - worth a try at some point
 " " Deoplete {
@@ -818,39 +828,41 @@ syntax enable
 " " }
 
 " ncm2 {
-  " Ideally we'd use python 2 for jedi, but it seems to break ncm2
-  let g:python3_host_prog = "/usr/local/bin/python3"
-  let g:ncm2_jedi#python_version = 3
-  let g:ncm2_jedi#environment = '/usr/local/bin/python3'
+  if g:autocomplete_engine == 'ncm2'
+    " Ideally we'd use python 2 for jedi, but it seems to break ncm2
+    let g:python3_host_prog = "/usr/local/bin/python3"
+    let g:ncm2_jedi#python_version = 3
+    let g:ncm2_jedi#environment = '/usr/local/bin/python3'
 
-  " let g:python_host_prog = "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
-  " let g:ncm2_jedi#python_version = 2
-  " let g:ncm2_jedi#environment = '/Library/Frameworks/Python.framework/Versions/2.7/bin/python'
+    " let g:python_host_prog = "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
+    " let g:ncm2_jedi#python_version = 2
+    " let g:ncm2_jedi#environment = '/Library/Frameworks/Python.framework/Versions/2.7/bin/python'
 
-  " let g:ncm2_jedi#environment = '/Users/jason.brewer/bin/py_for_jedi'
-  " let g:ncm2_jedi#settings = {
-  "       \ 'jedi.settings.auto_import_modules': ['tensorflow'],
-  "       \ }
-  autocmd BufEnter * call ncm2#enable_for_buffer()
+    " let g:ncm2_jedi#environment = '/Users/jason.brewer/bin/py_for_jedi'
+    " let g:ncm2_jedi#settings = {
+    "       \ 'jedi.settings.auto_import_modules': ['tensorflow'],
+    "       \ }
+    autocmd BufEnter * call ncm2#enable_for_buffer()
 
-  " TODO: Overridden by ultisnips
-  inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-  inoremap <expr> <CR> (pumvisible() ? "\<c-y>\<cr>" : "\<CR>")
+    " TODO: Overridden by ultisnips
+    inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+    inoremap <expr> <CR> (pumvisible() ? "\<c-y>\<cr>" : "\<CR>")
 
-  " inoremap <silent> <expr> <C-j> pumvisible() ? ncm2_ultisnips#expand_or("\<C-Y>", 'm') : "\<C-J>"
-  " TODO: Handles a few situations poorly (e.g. completing modules)
-  " Also doesn't trigger e.g. class -> UltiSnips
-  " inoremap <silent> <expr> <C-j>
-  "       \ complete_info(['selected'])['selected'] == -1
-  "       \ ? "\<C-Y>"
-  "       \ : ncm2_ultisnips#expand_or("\(", 'm')
-  inoremap <silent> <expr> <C-j>
-        \ complete_info(['selected'])['selected'] == -1
-        \ ? "\<C-R>=UltiSnips#ExpandSnippet()\<CR>"
-        \ : ncm2_ultisnips#expand_or("\(", 'm')
+    " inoremap <silent> <expr> <C-j> pumvisible() ? ncm2_ultisnips#expand_or("\<C-Y>", 'm') : "\<C-J>"
+    " TODO: Handles a few situations poorly (e.g. completing modules)
+    " Also doesn't trigger e.g. class -> UltiSnips
+    " inoremap <silent> <expr> <C-j>
+    "       \ complete_info(['selected'])['selected'] == -1
+    "       \ ? "\<C-Y>"
+    "       \ : ncm2_ultisnips#expand_or("\(", 'm')
+    inoremap <silent> <expr> <C-j>
+          \ complete_info(['selected'])['selected'] == -1
+          \ ? "\<C-R>=UltiSnips#ExpandSnippet()\<CR>"
+          \ : ncm2_ultisnips#expand_or("\(", 'm')
 
-  " ncm2/float-preview
-  let g:float_preview#docked = 1
+    " ncm2/float-preview
+    let g:float_preview#docked = 1
+  endif
 " }
 
 " UltiSnips {
@@ -1026,18 +1038,18 @@ syntax enable
   " files in the project
   " let g:gutentags_exclude_filetypes = ['javascript', 'cpp', 'c', 'java']
   let g:gutentags_ctags_exclude = [
-        \'*.c',
-        \'*.cc',
-        \'*.cpp',
-        \'*.css',
-        \'*.h',
-        \'*.java',
-        \'*.js',
-        \'*.json',
-        \'*.properties',
-        \'build',
-        \'Makefile',
-        \]
+        \ '*.c',
+        \ '*.cc',
+        \ '*.cpp',
+        \ '*.css',
+        \ '*.h',
+        \ '*.java',
+        \ '*.js',
+        \ '*.json',
+        \ '*.properties',
+        \ 'build',
+        \ 'Makefile',
+        \ ]
 " }
 
 " vim-move {
@@ -1138,6 +1150,14 @@ syntax enable
   end
 " }
 
+" pyparens.nvim {
+  let g:pyparens_hl_group = 'SurroundingBrace'
+
+  hi SurroundingBrace guibg=grey50 guifg=#dfffdf
+
+  let g:pyparens_pairs = [[ '\{', '\}' ], [ '\(', '\)' ], [ '\[', '\]' ]]
+" }
+
 " vim-session {
   let g:session_directory = '~/vim-sessions'
   nnoremap <Space>ss :SaveSession 
@@ -1165,6 +1185,81 @@ syntax enable
   autocmd FileType python call SemshiCustomHighlights()
 " }
 
+" nvim-miniyank {
+  let g:miniyank_maxitems = 20
+  let g:miniyank_filename = $HOME . "/.miniyank.mpack"
+
+  " In theory https://github.com/bfredl/nvim-miniyank/issues/19 will allow this
+  " to integrate with fzf, but doesn't seem to work. Denite is also supported
+  " natively. We alter the fzf source below to work
+
+  function! FZFMiniYankList() abort
+    function! KeyValue(key, val)
+      let line = join(a:val[0], '\n')
+      if (a:val[1] ==# 'V')
+        let line = '\n'.line
+      endif
+      return a:key.' '.line
+    endfunction
+    return map(miniyank#read(), function('KeyValue'))
+  endfunction
+
+  " Taken from miniyank#putreg
+  function! FZFMiniYankPutReg(data,cmd) abort
+      let regsave = [getreg('0'), getregtype('0')]
+      call setreg('0', a:data[0], a:data[1])
+      let s:visual = ''
+      let s:count = 1
+      execute 'normal! '.(s:visual ? 'gv' : '').s:count.'"0'.a:cmd
+      call setreg('0', regsave[0], regsave[1])
+      let s:last = a:data[0]
+  endfunction
+
+  function! FZFMiniYankHandler(cmd, line) abort
+    let s:pos = 0
+    echom "Line: " . a:line
+    let key = substitute(a:line, ' .*', '', '')
+    echom "Key: " . key
+    if !empty(a:line)
+      let yanks = miniyank#read()[key]
+      echom "Yanks: " . join(yanks, '|')
+      call FZFMiniYankPutReg(yanks, a:cmd)
+      echom "End call"
+    endif
+  endfunction
+
+  " command YanksAfter call fzf#run(fzf#wrap('YanksAfter', {
+  " \ 'source':  FZFYankList(),
+  " \ 'sink':    function('FZFYankHandler', ['p']),
+  " \ 'options': '--no-sort --prompt="Yanks-p> "',
+  " \ }))
+
+  " command YanksBefore call fzf#run(fzf#wrap('YanksBefore', {
+  " \ 'source':  FZFYankList(),
+  " \ 'sink':    function('FZFYankHandler', ['P']),
+  " \ 'options': '--no-sort --prompt="Yanks-P> "',
+  " \ }))
+
+  command YanksAfter call fzf#run({
+        \'source': FZFMiniYankList(),
+        \'sink': function('FZFMiniYankHandler', ['p']),
+        \'down': '50%',
+        \'options': '--no-sort --prompt "Yanks-p> "',
+        \'window': 'call FloatingFZF()',
+  \})
+
+  command YanksBefore call fzf#run({
+        \'source': FZFMiniYankList(),
+        \'sink': function('FZFMiniYankHandler', ['P']),
+        \'down': '50%',
+        \'options': '--no-sort --prompt "Yanks-p> "',
+        \'window': 'call FloatingFZF()',
+  \})
+
+  nnoremap <silent> <Space>cl :YanksAfter<CR>
+  nnoremap <silent> <Space>cL :YanksBefore<CR>
+" }
+
 " fzf {
   if g:file_finder == 'fzf'
     let g:fzf_use_floating_window = 1
@@ -1175,22 +1270,22 @@ syntax enable
 
     " nnoremap <Space>fv :<C-u>Files <C-R>=getcwd()<CR><CR>
     nnoremap <silent> <Space>fv :<C-u>call fzf#run({
-          \'source': 'fd --type f --exclude django_service --exclude django_server --exclude docker_files --exclude java --exclude resource',
-          \'sink': 'e',
-          \'down': '50%',
-          \'dir': '<C-R>=getcwd()<CR>',
-          \'options': '--prompt "<C-R>=getcwd()<CR>/"',
-          \'window': 'call FloatingFZF()',
-    \})<CR>
+          \ 'source': 'fd --type f --exclude django_service --exclude django_server --exclude docker_files --exclude java --exclude resource',
+          \ 'sink': 'e',
+          \ 'down': '50%',
+          \ 'dir': '<C-R>=getcwd()<CR>',
+          \ 'options': '--prompt "<C-R>=getcwd()<CR>/"',
+          \ 'window': 'call FloatingFZF()',
+    \ })<CR>
     " nnoremap <Space>ff :<C-u>Files <C-R>=expand('%:h')<CR><CR>
     nnoremap <silent> <Space>ff :<C-u>call fzf#run({
-          \'source': 'fd --type f --exclude django_service --exclude django_server --exclude docker_files --exclude java --exclude resource',
-          \'sink': 'e',
-          \'down': '50%',
-          \'dir': '<C-R>=expand('%:h')<CR>',
-          \'options': '--prompt "<C-R>=expand('%:h')<CR>/"',
-          \'window': 'call FloatingFZF()',
-    \})<CR>
+          \ 'source': 'fd --type f --exclude django_service --exclude django_server --exclude docker_files --exclude java --exclude resource',
+          \ 'sink': 'e',
+          \ 'down': '50%',
+          \ 'dir': '<C-R>=expand("%:h")<CR>',
+          \ 'options': '--prompt "<C-R>=expand("%:h")<CR>/"',
+          \ 'window': 'call FloatingFZF()',
+    \ })<CR>
     nnoremap <Space>fb :<C-u>Buffers<CR>
     nnoremap <Space>fg :<C-u>GFiles<CR>
 
@@ -1198,6 +1293,17 @@ syntax enable
     nnoremap <Space>f/ :<C-u>Rg<Space>
     nnoremap <Space>ft :<C-u>Tags<CR>
     nnoremap <Space>fl :<C-u>Lines<CR>
+
+    function! SourceGlobalTags()
+      let old_tags_val = &tags
+      let &tags = $HOME . "/python_library_tags/tags"
+      call fzf#vim#tags('')
+      let &tags = old_tags_val
+    endfunction
+
+    " tags from site-projects
+    nnoremap <silent> <Space>fs :<C-u>call SourceGlobalTags()<CR>
+
     " " nnoremap <Space>fl/ :<C-u>DeniteBufferDir grep:. -mode=normal<CR>
     " " nnoremap <Space>fr :<C-u>Denite -resume -cursor-pos=+1<CR>
     " " nnoremap <Space>f. :<C-u>Denite register:. -mode=normal<CR>
@@ -1210,8 +1316,6 @@ syntax enable
 
     " Note: Also <Space>fs - FlyGrep
 
-    hi link deniteMatchedChar Special
-
     " From https://kassioborges.dev/2019/04/10/neovim-fzf-with-a-floating-window.html
     if g:fzf_use_floating_window == 1
       " Reverse the layout to make the FZF list top-down
@@ -1220,6 +1324,19 @@ syntax enable
       " Using the custom window creation function
       " Only for fzf.vim
       let g:fzf_layout = { 'window': 'call FloatingFZF()' }
+
+      autocmd FileType fzf call BracelessUnmarkColumn()
+
+      " Hacky - somehow when the matches get copied to the new window, their ids
+      " change, and even braceless doesn't seem to have track of them - just
+      " delete any braceless matches
+      function! BracelessUnmarkColumn()
+        for m in getmatches()
+          if m.group == 'BracelessIndent'
+            call matchdelete(m.id)
+          end
+        endfor
+      endfunction
 
       " Function to create the custom floating window
       function! FloatingFZF()
@@ -1336,3 +1453,5 @@ syntax enable
   " To test: AirlineTheme base16_ocean
   let g:airline_theme = 'base16_ocean'
 " }
+
+source ~/dotfiles_snap/_nvimrc
