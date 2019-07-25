@@ -16,10 +16,10 @@ set background=dark
 if version > 580
     " no guarantees for version 5.8 and below, but this makes it stop
     " complaining
-    hi clear
-    if exists("syntax_on")
-	syntax reset
-    endif
+    " hi clear
+    " if exists("syntax_on")
+    "   syntax reset
+    " endif
 endif
 let g:colors_name="jbrewer_desert"
 
@@ -270,6 +270,9 @@ endif
 " Base desert {
 
 hi Normal	guifg=White guibg=grey20
+" In NeoVim, Whitespace defaults to NonText - which isn't quite right. Keep the
+" foreground, but take the default background
+hi Whitespace	guifg=LightBlue guibg=grey20
 
 " highlight groups
 hi Cursor	guibg=indianred guifg=khaki

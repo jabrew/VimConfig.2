@@ -47,8 +47,11 @@ endif
   Plugin 'fholgado/minibufexpl.vim.git'
 
   Plugin 'mileszs/ack.vim'
+
+  " Python
   " Plugin 'ivanov/vim-ipython'
   Plugin 'davidhalter/jedi-vim'
+  Plugin 'okcompute/vim-python-motions'
 
   " Devdocs
   " Inline with vim, but seems to only search language docs
@@ -268,6 +271,7 @@ endif
     set whichwrap+=<,>,b           " Backspace and cursor keys wrap
     set backspace=2                  " Normal backspace behavior
 
+    " Keep buffers open even after backgrounding them
     set hidden
 
     " Tab options
@@ -352,11 +356,11 @@ endif
     vnoremap <silent> # :<C-U>call <SID>VSetSearch('?')<CR>?<C-R>/<CR>
     vmap <kMultiply> *
 
-    nmap <silent> <Plug>VLToggle :let g:VeryLiteral = !g:VeryLiteral
-      \\| echo "VeryLiteral " . (g:VeryLiteral ? "On" : "Off")<CR>
-    if !hasmapto("<Plug>VLToggle")
-      nmap <unique> <Leader>vl <Plug>VLToggle
-    endif
+    " nmap <silent> <Plug>VLToggle :let g:VeryLiteral = !g:VeryLiteral
+    "   \\| echo "VeryLiteral " . (g:VeryLiteral ? "On" : "Off")<CR>
+    " if !hasmapto("<Plug>VLToggle")
+    "   nmap <unique> <Leader>vl <Plug>VLToggle
+    " endif
     let &cpo = s:save_cpo | unlet s:save_cpo
 
     " clang-format
@@ -495,8 +499,8 @@ endif
     vnoremap : ;
     vnoremap ; :
 
-    noremap <M-g> <C-U>
-    noremap <M-b> <C-D>
+    nnoremap <M-g> <C-U>
+    nnoremap <M-b> <C-D>
 
     " Swap ' and ` (default ` jumps to mark line and column, while ' just jumps to line, this makes the more useful binding
     " ')
@@ -522,7 +526,16 @@ endif
   nnoremap <Space>cp "*p
   nnoremap <Space>cP "*P
 
-  nnoremap <Space>cc "*yip
+  " Convert slashes to backslashes for Windows.
+  if has('win32')
+    nnoremap <Space>cf :let @*=substitute(expand("%"), "/", "\\", "g")<CR>
+    nnoremap <Space>cg :let @*=substitute(expand("%:p"), "/", "\\", "g")<CR>
+  else
+    " Copy filename
+    nnoremap <Space>cf :let @*=expand("%")<CR>
+    " Copy full path of file
+    nnoremap <Space>cg :let @*=expand("%:p")<CR>
+  endif
 
   " Files (f)
 
@@ -619,6 +632,7 @@ nnoremap <silent> <leader>h :silent :nohlsearch<CR>
 
   nnoremap <leader>b :CtrlPBuffer<CR>
   nnoremap <leader>g :CtrlPMRUFiles<CR>
+  nnoremap <leader>v :CtrlP getcwd()<CR>
 " }
 
 " Omni completion
@@ -702,7 +716,7 @@ let vimclojure#NailgunClient = 'd:\Programs\Development\vimclojure-2.2.0\ng.exe'
 " }
 
 " Syntastic {
-    " Currently too slow to enable on fbcode
+    " Currently disabled
     let g:syntastic_disabled_filetypes = ['cpp', 'java']
     let g:syntastic_mode_map = {
         \ 'mode': 'active',
@@ -1009,4 +1023,6 @@ endif
 
 if has('win32')
   source ~/VimConfig/_vimrc.windows
+else
+  source ~/VimConfig/_vimrc.mac
 endif

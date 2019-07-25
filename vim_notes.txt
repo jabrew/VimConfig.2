@@ -1,0 +1,189 @@
+= Completion plugins =
+
+- coc seems nice, but fails simple cases with pyls - try jedi
+  - e.g. Open ~/test.py from any non-~ folder
+- ncm2 and deoplete require python3
+- TabNine seems interesting, but expensive
+  - tbodt/deoplete-tabnine
+  - https://tabnine.com
+- deoplete
+  - https://github.com/Shougo/echodoc.vim
+
+= Coc =
+
+- https://github.com/neoclide/coc-highlight - highlight current symbol
+- https://github.com/neoclide/coc-sources
+- https://github.com/neoclide/coc-yank - highlight yanked text
+- https://github.com/neoclide/coc-git - async git gutter update
+
+= Ncm2 =
+
+Can potentially try with language server
+- https://github.com/Microsoft/python-language-server
+- https://github.com/prabirshrestha/vim-lsp
+- ncm2 + vim-lsp - https://github.com/ncm2/ncm2/issues/36
+- ncm2 float-window - stop auto close
+Conflicts with <CR> mappings
+- https://github.com/ncm2/ncm2/issues/129
+- https://github.com/ncm2/ncm2/issues/163
+
+= Other files =
+
+- https://github.com/suan/vim-instant-markdown - markdown with preview
+
+= Python =
+
+- Refactoring - https://github.com/python-rope/ropevim
+
+= Pair plugins =
+
+- Very few plugins support .
+- jiangmiao/auto-pairs is new version of the one in _vimrc. Supports . as long as <CR> never pressed
+- delimitMate may have support for .
+- Pear-tree - may have fixed bugs after 6/1
+
+= Statusline =
+
+- Investigate other statusline plugins
+ - https://github.com/vim-airline/vim-airline
+ - https://github.com/itchyny/lightline.vim
+ - https://github.com/powerline/powerline - heavy weight, but works in zsh too
+
+= Unit Tests/Build =
+
+- dispatch.vim
+- https://github.com/janko/vim-test
+  - Config example / terminal strategy - https://github.com/zenbro/dotfiles/blob/master/.nvimrc#L151-L187
+- https://github.com/alfredodeza/pytest.vim
+  - Seems to only be py.test
+- Built in: https://vim.fandom.com/wiki/Integration_with_PyUnit_testing_framework
+  - :compiler , :make
+- NeoMake will add signs
+- Ale
+  - Add fixer
+  - Bind ALENext/ALEPrevious
+
+= Tags =
+
+- gtags
+  - gutentags_plus - https://www.reddit.com/r/vim/comments/8l1meg/gutentags_plus_the_right_way_to_use_gtags_in_vim/
+  - gtags should be like ctags but much faster to access - not constrained to flat text format
+  - May also allow indexing e.g. tensorflow code
+  - Can use ncm2-gtags
+- Gtags - tag manager (gnu global). denite-gtags
+  - gtags-scope
+- Dynamic tag highlight
+  - Selected semshi - way more dynamic and full featured, but probably slower
+  - Other options:
+    - Neotags.nvim - https://www.reddit.com/r/neovim/comments/53mdj9/neotagsnvim_tag_highlight_in_neovim/
+      - But integrate with gutentags
+      - Focus on speed - e.g. c++ module to parse tags file, etc
+    - EasyTags - but long time since last update
+- https://github.com/zackhsi/fzf-tags
+  - Fzf for tag jump/multiple tag selector
+  - Should use if we get lots of duplicates
+- Use ctags/gtags to e.g. find callers
+  - https://github.com/jsfaint/gen_tags.vim
+  - Should be easy to consume just their mappings
+
+= Other =
+
+- https://github.com/ryanoasis/vim-devicons
+- vim-operator-replace - replace selected text with clipboard
+
+= Motions and TextObjects =
+
+- Maybe vim-python-match
+  - % for python - between e.g. if/else/etc
+  - Seems less precise than other explicit motions
+- Surround - more principled/better motion support
+  - https://github.com/rhysd/vim-operator-surround
+  - https://github.com/machakann/vim-sandwich
+- https://github.com/wellle/targets.vim
+  - Learn mappings (already installed)
+  - Add text objects, plus adds seeking for existing objects - jump to nearest match
+- https://github.com/hgiesel/vim-motion-sickness
+  - Lots of options, some quite handy
+- Other options
+  - https://github.com/kana/vim-textobj-user/wiki
+    - Syntax
+    - Sentence
+    - Line
+- Exchange two selections
+  - Even supports .
+  - https://github.com/tommcdo/vim-exchange
+
+- Moving arguments (alternatives to vim-swap)
+  - vim-argumentative
+  - sideways.vim
+
+= Clipboard/Yank =
+
+- https://github.com/vim-scripts/YankRing.vim
+  - Overrides some basic register management
+- https://github.com/maxbrunsfeld/vim-yankstack - probably not
+- EasyClip - stores separate buffer of yanks
+  - https://github.com/davidosomething/EasyClipRing.vim/
+  - Maybe EasyClip + FZF -
+    https://github.com/jasonij/dotfiles/blob/master/init.vim
+- TODO: Investigate easyclip replacements
+  - https://github.com/svermeulen/vim-subversive (integrates with abolish)
+  - https://github.com/svermeulen/vim-yoink
+  - https://github.com/svermeulen/vim-cutlass (probably not - replaces mark
+  operation)
+- NeoYank - requires denite, but seems much cleaner
+- https://github.com/junegunn/vim-peekaboo
+  - Need to enhance - only does current registers
+
+= Coc =
+
+- Debugging and setup
+  - https://github.com/neoclide/coc.nvim/wiki/Using-workspaceFolders
+    - Fix the issue where editing a file not relative to the current directory
+    doesn't work: set b:coc_root_patterns/rootPatterns/coc.preferences.rootPatterns - or add .git/.projections.json/etc
+  - Alternate way to change: https://github.com/neoclide/coc.nvim/issues/636
+    - :CocList folders/workspaceFolderChange event
+  - Debugging guide - https://github.com/neoclide/coc.nvim/wiki/Debug-coc.nvim
+  - Separate standalone language server - https://github.com/neoclide/coc.nvim/issues/419#issuecomment-462286479
+- References
+  - Useful keybindings - https://www.reddit.com/r/vim/comments/brylz6/cocnvim_on_vim_any_dotfile_examples_on/
+  - https://github.com/taigacute/ThinkVim
+    - Setup for lots of plugins, including coc
+- Todo
+  - Consider tabnine (ml based autocomplete, with coc plugin)
+  - Parameter insertion
+  - Snippets
+  - Preview window help
+- To try
+  - https://github.com/neoclide/coc.nvim/wiki/Language-servers#python
+  - autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+- Use g:coc_global_extensions to auto-install extensions
+
+= References =
+
+- https://github.com/petobens/dotfiles/blob/master/vim/init.vim
+  - Lots of mac/win/linux
+  - Caching and lazy loading
+
+= Finder Plugins =
+
+- Denite: Can combine sources
+- Make fzf or denite the selector for things like :tag or even autocomplete
+options (with hotkey)
+
+= Other Plugins =
+
+- https://github.com/kamykn/spelunker.vim
+  - Spelling - including camelCase and underscore_notation
+
+= Tips =
+
+- Ctrl-f during a search - show search history
+- q: , q/ , q? - recent commands and searches
+- set colorcolumn=+1 - colors text past textwidth
+- Highlight multiple words - https://github.com/petobens/dotfiles/blob/master/vim/init.vim
+  - HiInterestingWord
+- Steve Losh's vimrc
+  - https://bitbucket.org/sjl/dotfiles/src/default/vim/vimrc
+  - Clean up screen: nnoremap U :syntax sync fromstart<cr>:redraw!<cr>
+- Show keybindings - https://github.com/liuchengxu/vim-which-key

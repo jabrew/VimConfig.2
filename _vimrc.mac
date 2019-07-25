@@ -1,0 +1,4 @@
+" Keybindings {
+  nnoremap © <C-U>
+  nnoremap ∫ <C-D>
+" }

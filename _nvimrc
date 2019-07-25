@@ -1,41 +1,303 @@
-" True colors in terminal
+" Use e.g. guifg rather than ctermfg for colors
+let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 set termguicolors
+
+" Custom cursor in terminal (note: may not work in tmux - see faq to fix)
+let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
+
+" NOTE: Gui config in
+" - Mac: ~/Library/Preferences/glrnvim.yml (mac)
+" - Linux: ~/.config/glrnvim.yml
+" - Should be symlinked, with real path ~/VimConfig
+"
+" Font options: https://github.com/powerline/fonts.git
+" Current font: Source Code Pro for Powerline : h15
 
 set nocompatible
 
-" Custom cursor in terminal (note: may not work in tmux - see faq to fix)
-:let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
+" TODO:
+" - Up arrow to lookback locally only - https://superuser.com/questions/446594/separate-up-arrow-lookback-for-local-and-global-zsh-history/691603
+" - https://github.com/junegunn/fzf/wiki/examples
+"   - Chrome history
+"   - cd
+
+" - hub - github
+"   - Fugitive plugin
+"   - Get working with ghe
+
+" Hammerspoon
+" - Version: 0.9.75
 
 " Dein {
 " To install: :call dein#install()
+" Dein installed with sh ./installer.sh ~/.nvim/dein
 
 " Required:
-set runtimepath+=~/.neovim/dein/repos/github.com/Shougo/dein.vim
+set runtimepath+=~/.nvim/dein/repos/github.com/Shougo/dein.vim
 set runtimepath+=~/VimConfig
+
+" fzf, denite
+" fzf - way faster
+" denite - supports resume, overall more configurable
+let g:file_finder = 'fzf'
+
+" ncm2, coc
+" ncm2 - works
+" coc - theoretically way stronger, fails simple cases - e.g. completions after
+" `gnv ~/test.py`
+let g:autocomplete_engine = 'ncm2'
 
 " Required:
 " Note: dein#load_state should be the if condition, but it doesn't seem to work
-call dein#load_state('~/.neovim/dein/')
-if 1
-  call dein#begin('~/.neovim/dein/')
+" call dein#load_state('~/.nvim/dein/')
+" if 1
+if dein#load_state('/Users/jason.brewer/.nvim/dein')
+  call dein#begin('~/.nvim/dein/')
 
   " Let dein manage dein
   " Required:
-  call dein#add('~/.neovim/dein/repos/github.com/Shougo/dein.vim')
+  call dein#add('~/.nvim/dein/repos/github.com/Shougo/dein.vim')
 
-  call dein#add('tpope/vim-repeat')
-
-  call dein#add('Shougo/deoplete.nvim')
-  call dein#add('kana/vim-arpeggio')
+  " call dein#add('Shougo/deoplete.nvim')
   " call dein#add('zchee/deoplete-jedi')
-  call dein#add('davidhalter/jedi-vim')
 
-  " Add or remove your plugins here:
-  " call dein#add('Shougo/neosnippet.vim')
-  " call dein#add('Shougo/neosnippet-snippets')
+  if g:autocomplete_engine == 'ncm2'
+    call dein#add('ncm2/ncm2')
+    call dein#add('roxma/nvim-yarp')
+    " Alternative: https://github.com/HansPinckaers/ncm2-jedi (may be faster,
+    " but has less additional information)
+    call dein#add('ncm2/ncm2-jedi')
+    call dein#add('ncm2/ncm2-ultisnips')
+    call dein#add('ncm2/ncm2-bufword')
+    call dein#add('ncm2/ncm2-tagprefix')
+    " TODO: Get this working (maybe with deoplete). Build: Try install vscode
+    " and finding python binary from there
+    " call dein#add('autozimu/LanguageClient-neovim', {
+    "       \ 'build': 'bash install.sh', 'rev': 'next'})
+    " Show params in a floating window - without moving text like regular
+    " preview
+    call dein#add('ncm2/float-preview.nvim')
+  elseif g:autocomplete_engine == 'coc'
+    call dein#add(
+          \ 'neoclide/coc.nvim',
+          \ {'merge': 0, 'build': './install.sh nightly'})
+  else
+    echoerr "Unknown autocomplete engine " . g:autocomplete_engine
+  endif
 
-  " You can specify revision/branch/tag.
-  " call dein#add('Shougo/vimshell', { 'rev': '3787e5' })
+  call dein#add('SirVer/ultisnips')
+
+  " call dein#add('cohama/lexima.vim')
+  " call dein#add('tmsvg/pear-tree')
+  call dein#add('jiangmiao/auto-pairs')
+
+  " Alternative: AndrewRadev/splitjoin.vim - more popular, but doesn't seem to
+  " indent quite correctly
+  call dein#add('FooSoft/vim-argwrap')
+
+  if g:file_finder == 'denite'
+    " TODO: Consider yank history - https://github.com/Shougo/neoyank.vim
+    " TODO: https://github.com/petobens/dotfiles/blob/master/vim/init.vim for
+    " other plugins
+    " TODO: Spell filter, denite suggest, etc from other plugins link above
+    call dein#add('Shougo/denite.nvim')
+  elseif g:file_finder == 'fzf'
+    " Installed via `brew install fzf`
+    call dein#add('/usr/local/opt/fzf')
+    call dein#add('junegunn/fzf.vim')
+  else
+    echoerr "Unknown file finder " . g:file_finder
+  end
+
+  " Note: Almost entirely contained within denite/fzf, but can't resume, this is
+  " as-you-type
+  call dein#add('wsdjeg/FlyGrep.vim')
+
+  call dein#add('sbdchd/neoformat')
+
+  " Text objects
+  call dein#add('kana/vim-textobj-user')
+  " e.g. vaf, vac (rebound below to vaC, conflicts with tcomment select comment)
+  call dein#add('bps/vim-textobj-python', {'on_ft': 'python'})
+  " Alternative: https://github.com/vim-scripts/argtextobj.vim
+  " Older: call dein#add('vim-scripts/Parameter-Text-Objects')
+  " e.g. vi, - select parameter
+  call dein#add('sgur/vim-textobj-parameter')
+  " e.g. vie - ie trims whitespace, ae selects entire
+  call dein#add('kana/vim-textobj-entire')
+  " e.g. viv - camelCase or under_score part
+  call dein#add('Julian/vim-textobj-variable-segment')
+  " e.g. vam - method, vaM - method chain
+  call dein#add('thalesmello/vim-textobj-methodcall')
+  " e.g. A-k to move a line down - hjkl movements
+  call dein#add('matze/vim-move')
+
+  " Alternative: airblade/vim-gitgutter
+  " e.g. [c, ]c, [C, ]C - jump to chunk
+  " e.g. vig - select git chunk (mapped below)
+  call dein#add('mhinz/vim-signify')
+  call dein#add('tpope/vim-fugitive')
+
+  call dein#add('rhysd/git-messenger.vim', {
+        \ 'on_cmd' : 'GitMessenger',
+        \ 'on_map' : '<Plug>(git-messenger)'})
+
+  " Lots of text objects - learn or replace with vim-textobj-*
+  call dein#add('wellle/targets.vim')
+  call dein#add('bkad/CamelCaseMotion')
+
+  " Alternative: lh-tags, easytags, watch script, git rebase hook
+  " https://www.reddit.com/r/vim/comments/6ovppc/vimeasytags_alternative/
+  " Note: Easytags is not maintained, but has tag highlighting
+  call dein#add('ludovicchabant/vim-gutentags')
+
+  " call dein#add('kien/ctrlp.vim')
+  " Alternative: undotree
+  " Alternative: gundo
+  " Forks and extends gundo
+  call dein#add('simnalamburt/vim-mundo', {'on_cmd' : 'MundoToggle'})
+  " Works ok, but requires python2
+  " call dein#add('vim-scripts/swap-parameters')
+  " Way better than swap-parameters, but bindings conflict with tcomment (net:
+  " get rid of tcomment)
+  " g<, g> to move param, gs to enter swap mode
+  call dein#add('machakann/vim-swap')
+  " Alternative: https://github.com/tyru/caw.vim
+  " call dein#add('tomtom/tcomment_vim')
+  call dein#add('tpope/vim-commentary')
+  call dein#add('tpope/vim-abolish')
+  " call dein#add('Lokaltog/vim-easymotion')
+  call dein#add('easymotion/vim-easymotion')
+  call dein#add('hynek/vim-python-pep8-indent', {'on_ft': 'python'})
+  call dein#add('tpope/vim-ragtag')
+  call dein#add('tpope/vim-repeat')
+  call dein#add('tpope/vim-surround')
+  call dein#add('tpope/vim-unimpaired')
+  call dein#add('tmhedberg/matchit')
+
+  " Alternative: tpope/vim-obsession
+  call dein#add('xolox/vim-misc')
+  call dein#add('xolox/vim-session')
+
+  " Show register preview window on " or @
+  " call dein#add('junegunn/vim-peekaboo')
+  " Lots of clipboard changes
+  " Alternative: YankRing
+  " Alternative: easyclip is split into several plugins - vim-subversive,
+  " vim-yoink, vim-cutlass
+  " Disadvantage: Seems to replace tons of functionality
+  " call dein#add('svermeulen/vim-easyclip')
+  call dein#add('bfredl/nvim-miniyank')
+
+  " Show open buffers, vertically
+  " Other options: horizontal tagbar
+  " vim-buftabline, vem-tabline
+  " Has a bug when deleting unknown buffers (e.g. :Pytest file -s)
+  " Fix: Add dictionary guard !has_key(s:bufPathDict, bufnr) to
+  " BuildBufferPathSignDict
+  " weynhamz is slightly newer
+  " call dein#add('fholgado/minibufexpl.vim')
+  call dein#add('weynhamz/vim-plugin-minibufexpl')
+
+  " Command-mode keymaps
+  call dein#add('vim-utils/vim-husk')
+
+  call dein#add('kana/vim-arpeggio')
+  call dein#add('davidhalter/jedi-vim', {'on_ft': 'python'})
+  call dein#add('w0rp/ale')
+
+  " Note: Requires ctags with json support - e.g.
+  " brew install --HEAD --with-jansson universal-ctags/universal-ctags/universal-ctags
+  " Guide: http://liuchengxu.org/posts/vista.vim/
+  call dein#add('liuchengxu/vista.vim', {'on_ft': 'python'})
+
+  " Consider: https://github.com/haya14busa/incsearch-easymotion.vim
+  call dein#add('haya14busa/incsearch.vim')
+
+  " Highlight braces surrounding the cursor. Note: builtin matchParen.vim does
+  " this, but only shows when cursor is on a brace
+  " Note: Disabled, slows down scrolling significantly
+  " call dein#add('Yggdroot/hiPairs')
+  " Show a vertical line around indents - recommended by ayu-theme/ayu-vim
+  " Unneeded: Braceless +highlight is handier
+  " call dein#add('Yggdroot/indentLine')
+  " Note: May be slow to move cursor horizontally
+  " Note: Distracting in insert mode (parens flicker). Ideally: disable in
+  " insert mode
+  " call dein#add('djdt/pyparens.nvim')
+
+  "
+  " Python
+  "
+
+  " Alternative: Can use Yggdroot/indentLine to sort of replace +highlight
+  " Alternatives:
+  " - https://github.com/jeetsukumaran/vim-pythonsense
+  "   - Has many more motions
+  " - vim-python-motions
+  "   - Slightly more precise
+  " - vim-textobj-user has explicit function/class mappings
+  " Git: Changed map to noremap for easymotion bindings
+  " ,P and ,S - easymotion for top level items
+  call dein#add('tweekmonster/braceless.vim', {'on_ft': 'python'})
+
+  call dein#add('numirias/semshi', {'on_ft': 'python'})
+  " TODO: Consider tmhedberg/SimpylFold
+  call dein#add('vim-python/python-syntax', {'on_ft' : 'python'})
+
+  " Use pytest.vim instead - only works for pytest, but has way more features
+  " call dein#add('tpope/vim-dispatch')
+  " call dein#add('janko/vim-test')
+  " Alternative: https://github.com/w0rp/python_tools
+  " Alternative: NeoMake
+  call dein#add('alfredodeza/pytest.vim', {'on_cmd': 'Pytest'})
+
+  "
+  " Vim
+  "
+
+  call dein#add('chrisbra/Colorizer', {'on_cmd': 'ColorToggle'})
+
+  "
+  " Other
+  "
+
+  call dein#add('vimwiki/vimwiki')
+
+  call dein#add('vim-airline/vim-airline')
+  " Changes:
+  " Update s:gui09 = "#d08770" to #b07780
+  call dein#add('vim-airline/vim-airline-themes')
+
+  call dein#add('plasticboy/vim-markdown', {'on_ft' : 'markdown'})
+
+  "
+  " Colorschemes
+  "
+
+  " While choosing, enable these two - otherwise disable
+  " call dein#add('xolox/vim-colorscheme-switcher')
+  " call dein#add('flazz/vim-colorschemes')
+  " call dein#add('sonph/onehalf', {'rtp': 'vim/'})
+  " call dein#add('chriskempson/base16-vim')
+  " call dein#add('nanotech/jellybeans.vim')
+  " nnoremap H :PrevColorScheme<CR>
+  " nnoremap L :NextColorScheme<CR>
+  " Notes:
+  " gruvbox: Worth considering if going to the work to remove the yellow
+  " ayu: Might be ok, a little dark
+  " jellybeans: With lighter background might be ok - see below
+  " tomorrow-night-eighties: Not bad, slightly too low contrast
+  " Idea: Try jellybeans then loading jbrewer_desert - get special features and
+  " better defaults, but keep readaibility. Need to resolve a few key
+  " differences first
+
+  " Probably need to wait for language server for this
+  " Code edit: Use ~/VimConfig/python-imports.cfg instead of default
+  " Doesn't work - finds other modules that import target module
+  " call dein#add('mgedmin/python-imports.vim')
+  " Doesn't work - bugs when not finding module easily
+  " call dein#add('dbsr/vimpy')
 
   " Required:
   call dein#end()
@@ -50,15 +312,11 @@ syntax enable
 
 " }
 
-" Keybindings {
-  " Swap ; and : in normal mode
-  nnoremap : ;
-  nnoremap ; :
-  vnoremap : ;
-  vnoremap ; :
-" }
-
-" Basic configs {
+" Basics {
+  " let g:jellybeans_overrides = {
+  "       \     'background': { 'guibg': '2d2d2d' },
+  "       \ }
+  " colorscheme jellybeans
   colorscheme jbrewer_desert
 
   set nocompatible
@@ -67,67 +325,304 @@ syntax enable
   set smartcase
   set incsearch
   set hls
+  set mouse=a
+
+  " Automatically resize all windows
+  set equalalways
 
   " TODO: Consider 'showfulltag' for autocomplete
 
   set showcmd
   set wildmode=list:longest,full
 
-  set lcs=tab:»\ ,trail:·,extends:#,nbsp:.
+  if has('win32')
+    set lcs=tab:»\ ,trail:·,extends:#,nbsp:.
+  else
+    set lcs=tab:»\ ,trail:·,extends:#,nbsp:.
+  endif
   set list
 
   set number
 
   set wildmenu
-
   " Keep at least 5 lines above and below the cursor
   set scrolloff=5
-
-  " Causes flashing on startup with Neovim.app - but may make macro replays
-  " significantly faster
-  " set lazyredraw
+  " May cause flashing on startup
+  set lazyredraw
 
   set vb t_vb=
 
-  set formatoptions=croqln
-
+  set formatoptions=croqlnj
   " set cursorline
+
+  " set completeopt=menu,preview
+  "set completeopt=menuone,menu,longest,preview
+  " Used for YCM
+  " set completeopt=preview,menuone
+  " Used for ncm2 (important: breaks if not specified)
+  set completeopt=noinsert,menuone,noselect
+
+  " Get rid of autocomplete popup info ("The only match", etc)
+  set shortmess+=c
 
   " From http://ksjoberg.com/vim-esckeys.html , this should help the issue
   " where pushing esc takes a while to take effect
-  " No available in NeoVim
   " set noesckeys
 
-  " To set up vimwiki:
+  " To set up vimwiki (MacVim):
   " cd /Applications
   " cp -r MacVim.app/ VimWiki.app/
   " cd VimWiki.app/Contents/
   " gvim Info.plist
   " - Replace CFBundleName >MacVim< with >VimWiki<
   let g:mycwd = getcwd()
-  if getcwd() == expand('~/vimwiki') || getcwd() == '~/vimwiki' || !has('gui_running')
+  if g:mycwd == expand('~/vimwiki') || g:mycwd == '~/vimwiki' || (!has('gui_running') && !has('nvim'))
     let g:is_tabbed = 1
   else
     let g:is_tabbed = 0
   endif
-  if getcwd() == expand('~/vimwiki') || getcwd() == '~/vimwiki'
+  if g:mycwd == expand('~/vimwiki') || g:mycwd == '~/vimwiki'
     let g:is_wiki = 1
   else
     let g:is_wiki = 0
   endif
+
+  " https://vi.stackexchange.com/questions/10065/how-can-i-show-the-containing-directory-in-the-window-title
+  " TODO: Set this more accurately (v:servername from 'title' doesn't work)
+  " TODO: Consider something like
+  " https://coderwall.com/p/lznfyw/better-title-string-for-vim
+  let g:window_name = 'NVIM'
+  if g:is_wiki
+    let g:window_name = 'VIMWIKI'
+  endif
+  set titlestring=%t%(\ %M%)%(\ %h%)%(\ (%{expand(\"%:~:.:h\")})%)%(\ %a%)%(\ -\ %{g:window_name}%)
 " }
 
-" Deplete {
-  let g:deoplete#enable_at_startup = 1
-  let g:deoplete#enable_smart_case = 1
-
-  inoremap <silent><expr> <Tab> pumvisible() ? "\<C-N>" : "\<Tab>"
-
-  " <CR>: close popup and save indent.
-  inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
-  function! s:my_cr_function() abort
-    return deoplete#close_popup() . "\<CR>"
+" Keybindings {
+  " Build keybinds
+  let g:quickFixOpen = 0
+  function! ToggleQuickFix()
+    if g:quickFixOpen
+      let g:quickFixOpen = 0
+      ccl
+    else
+      let g:quickFixOpen = 1
+      belowright copen
+    endif
   endfunction
+  nnoremap <F2> :cN<CR>
+  nnoremap <F3> :cn<CR>
+  nnoremap <F4> :silent exe "call ToggleQuickFix()"<CR>
+
+  " General keybinds
+  if g:is_tabbed == 1
+    nnoremap <C-P> :tabp<CR>
+    nnoremap <C-N> :tabn<CR>
+    nnoremap <Leader>p :bp<CR>
+    nnoremap <Leader>n :bn<CR>
+    " nnoremap <M-P> :bp<CR>
+    " nnoremap <M-N> :bn<CR>
+    " nnoremap Ã° :bp<CR>
+    " nnoremap Ã® :bn<CR>
+  else
+    nnoremap <silent> <C-P> :MBEbp<CR>
+    nnoremap <silent> <C-N> :MBEbn<CR>
+    nnoremap <silent> <Leader>p :tabp<CR>
+    nnoremap <silent> <Leader>n :tabn<CR>
+    " nnoremap <M-p> :tabp<CR>
+    " nnoremap <M-n> :tabn<CR>
+    " nnoremap Ã° :tabp<CR>
+    " nnoremap Ã® :tabn<CR>
+  endif
+  "nmap <C-S> ;A<CR>
+
+  " Swap ; and : in normal mode
+  nnoremap : ;
+  nnoremap ; :
+  vnoremap : ;
+  vnoremap ; :
+
+  " inoremap <C-e> <C-o>A
+  " Overridden below
+  " inoremap <C-y> <C-o>I
+
+  noremap <M-g> <C-U>
+  noremap © <C-U>
+  noremap <M-b> <C-D>
+  noremap ∫ <C-D>
+
+  nnoremap <silent> <leader>h :silent :nohlsearch<CR>
+
+  " :tjump instead of :tag
+  nnoremap <C-]> g<C-]>
+
+  " Swap ' and ` (default ` jumps to mark line and column, while ' just jumps to line, this makes the more useful binding
+  " ')
+  nnoremap ' `
+  nnoremap ` '
+
+  nnoremap <Up> <C-W>k
+  nnoremap <Down> <C-W>j
+  nnoremap <Left> <C-W>h
+  nnoremap <Right> <C-W>l
+
+  " Window size keybindings
+  " TODO: Move into mac specific
+  " TODO: Consider moving into an init function align with notifyWindowActive
+  if g:is_wiki
+    " TODO: Need to also resize the window
+    " NeoVim: Lines 40, columns 86
+    " MacVim: Lines 40, columns 84
+    nnoremap <silent> <Leader>wn :silent !hs -c "windowPosition('cur', 'right', 'bottom', 778, 786)"<CR>
+    silent !hs -c "windowPosition('cur', 'right', 'bottom', 778, 786)"
+    " self.proc_by_name('VimWiki'), 759, 809),
+  else
+    " Lines 42, columns 117
+    nnoremap <silent> <Leader>wn :silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"<CR>
+    nnoremap <silent> <Leader>wl :silent !hs -c "windowPosition('cur', 'center', 'top', 1804, 976, 234)"<CR>
+    " silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"
+    " Note: equalalways seems to not quite equalize windows
+    silent !hs -c "windowPosition('cur', 'center', 'top', 0, 0, -139)"
+  endif
+
+  " Notify hammerspoon the window is active
+  " TODO: Consider also notifying hammerspoon on WinEnter
+  if v:vim_did_enter
+    silent !hs -c "notifyWindowActive()"
+  else
+    au VimEnter * silent !hs -c "notifyWindowActive()"
+  endif
+" }
+
+" netrw {
+  " When accidentially opening netrw windows, this makes them close as soon as
+  " another window is activated. May need to close/open MBE
+  let g:netrw_fastbrowse = 0
+  autocmd FileType netrw setl bufhidden=wipe
+" }
+
+" glrnvim config {
+  " Mostly within config:
+  " Linux: ~/.config/glrnvim.yml
+  " Mac: ~/Library/Preferences/glrnvim.yml
+  " Windows: ~\AppData\Roaming\glrnvim.yml
+" }
+
+" Space keybindings {
+  " Space bindings - should be very organized and easy to use, but harder to
+  " type. Any very frequently used bindings should be moved to dedicated keys
+  " TODO: Use plugin to visualize/hint these
+
+  " Clipboard (c)
+  vnoremap <Space>cy "*y
+  vnoremap <Space>cp "*p
+
+  nnoremap <Space>cy "*y
+  nnoremap <Space>cp "*p
+  nnoremap <Space>cP "*P
+
+  " More (c) bindings under nvim-miniyank
+
+  " Convert slashes to backslashes for Windows.
+  if has('win32')
+    nnoremap <Space>cf :let @*=substitute(expand("%"), "/", "\\", "g")<CR>
+    nnoremap <Space>cg :let @*=substitute(expand("%:p"), "/", "\\", "g")<CR>
+  else
+    " Copy filename
+    nnoremap <Space>cf :let @*=expand("%")<CR>
+    " Copy full path of file
+    nnoremap <Space>cg :let @*=expand("%:p")<CR>
+  endif
+
+  " Files (f)
+
+  nnoremap <Space>fw :w<CR>
+  nnoremap <Space>fq :wqa<CR>
+
+  " Note: Bindings for plugins in separate sections
+
+  " Jedi (j)
+  " Denite/fzf (f)
+  " NeoFormat (=)
+  " Git (git-messenger) (g)
+  " pytest.vim (t)
+  " vim-session (s)
+" }
+
+" Indentation and editing options {
+    filetype on
+    syntax enable
+
+    filetype indent on
+    filetype plugin on
+
+    set tabstop=2
+    set shiftwidth=2
+    set expandtab
+    set textwidth=80
+    "set smarttab
+
+    " Sets indentation options (new lines match last open paren, etc)
+    set cinoptions=>s,e0,n0,f0,{0,}0,^0,:s,=s,l0,b0,gs,hs,ps,ts,is,+s,c3,C0,/0,(0,us,U0,w0,Ws,m1,j0,)20,*70,N-s
+    " Original: set cinoptions=>s,e0,n0,f0,{0,}0,^0,:s,=s,l0,b0,gs,hs,ps,ts,is,+s,c3,C0,/0,(2s,us,U0,w0,W0,m0,j0,)20,*30
+
+    set autoindent
+    set smartindent
+    " Stop smartindent from putting # at column 1
+    inoremap # X#
+    set cindent
+
+    set whichwrap+=<,>,b           " Backspace and cursor keys wrap
+    set backspace=2                  " Normal backspace behavior
+
+    " Keep buffers open even after backgrounding them
+    set hidden
+
+    " Tab options
+    if g:is_tabbed
+      set showtabline=2
+    else
+      set showtabline=1
+    endif
+    " if g:is_wiki
+    "   set showtabline=1
+    " endif
+    set switchbuf=usetab
+
+    " Python indentation
+    let g:pyindent_open_paren = '&sw'
+    let g:pyindent_continue = '&sw'
+" }
+
+" Auto commands {
+    "au GUIEnter * simalt ~x
+
+    " au TabEnter * source ~/VimConfig/TabEnter.vim
+    " TODO: If indenting doesn't work right, consider adding ts=2
+    au FileType ruby,eruby,yaml setl ai sw=2 sts=2 et
+    au FileType cpp set ai sw=2 sts=2 et
+    au FileType python setl ai sw=4 sts=4 et
+    au FileType javascript setl ai sw=4 sts=4 et
+    au FileType jinja setl ai sw=4 sts=4 et
+    au FileType go setl ai sw=4 sts=4 et
+
+    "au Filetype html,xml,xsl source ~\vimfiles\bundle\closetag.vim
+    "autocmd FileType ruby,eruby set omnifunc=rubycomplete#Complete
+    " Curretly disabled as it tends to lag out on big folders
+    au FileType python set omnifunc=
+
+    " Always show sign column
+    au FileType python setl signcolumn=yes:1
+
+    " Helps issue where long multiline strings or comments cause syntax to get
+    " out of sync
+    au FileType python syn sync minlines=2000
+
+    " Go to last line in given file
+    autocmd BufReadPost *
+        \ if line("'\"") > 1 && line("'\"") <= line("$") |
+        \ exe "normal! g`\"" |
+        \ endif
 " }
 
 " Not available in NeoVim
@@ -158,14 +653,815 @@ syntax enable
 "   endif
 " " }
 
-" Arpeggio {
-    call arpeggio#load()
-    let g:arpeggio_timeoutlen = 60
-    Arpeggio inoremap jk <Esc>
-    Arpeggio cnoremap jk <C-c>
-    Arpeggio vnoremap jk <Esc>
-    Arpeggio onoremap jk <Esc>
-    Arpeggio nmap we <Plug>(easymotion-s2)
-    Arpeggio vmap we <Plug>(easymotion-s2)
-    Arpeggio imap cv <M-e>
+" Filetypes {
+  augroup filetypedetect
+    au BufRead,BufNewFile *.thrift         setfiletype thrift
+    au BufRead,BufNewFile *.proto         setfiletype proto
+  augroup END
 " }
+
+" Status line and ruler formats {
+    set title
+    set laststatus=2
+
+    " " Broken down into easily includeable segments
+    " set statusline=%<%f\   " Filename
+    " set statusline+=%w%h%m%r " Options
+    " "set statusline+=%{fugitive#statusline()} "  Git Hotness
+    " set statusline+=\ [%{&ff}/%{strlen(&fenc)?&fenc:'noenc'}/%{strlen(&ft)?&ft:'notype'}]            " filetype
+    " set statusline+=\ [%{getcwd()}]          " current dir
+    " " set statusline+=\ %#Error#%{SyntasticStatuslineFlag()}%*
+    " set statusline+=\ %#Error#%{AleStatusLineFlag()}%*
+    " "set statusline+=\ [A=\%03.3b/H=\%02.2B] " ASCII / Hexadecimal value of char
+    " set statusline+=%=%-14.(%l/%L,%c%V%)\ %p%%  " Right aligned file nav info
+
+    set rulerformat=%30(%=\:b%n\ %y%m%r%w\ %l/%L,%c%V\ %P%)
+" }
+
+" Search for visually selected text with * # {
+  " http://vim.wikia.com/wiki/VimTip171
+  let s:save_cpo = &cpo | set cpo&vim
+  if !exists('g:VeryLiteral')
+    let g:VeryLiteral = 0
+  endif
+
+  function! s:VSetSearch(cmd)
+    let old_reg = getreg('"')
+    let old_regtype = getregtype('"')
+    normal! gvy
+    if @@ =~? '^[0-9a-z,_]*$' || @@ =~? '^[0-9a-z ,_]*$' && g:VeryLiteral
+      let @/ = @@
+    else
+      let pat = escape(@@, a:cmd.'\')
+      if g:VeryLiteral
+        let pat = substitute(pat, '\n', '\\n', 'g')
+      else
+        let pat = substitute(pat, '^\_s\+', '\\s\\+', '')
+        let pat = substitute(pat, '\_s\+$', '\\s\\*', '')
+        let pat = substitute(pat, '\_s\+', '\\_s\\+', 'g')
+      endif
+      let @/ = '\V'.pat
+    endif
+    normal! gV
+    call setreg('"', old_reg, old_regtype)
+  endfunction
+
+  vnoremap <silent> * :<C-U>call <SID>VSetSearch('/')<CR>/<C-R>/<CR>
+  vnoremap <silent> # :<C-U>call <SID>VSetSearch('?')<CR>?<C-R>/<CR>
+  vmap <kMultiply> *
+
+  " nmap <silent> <Plug>VLToggle :let g:VeryLiteral = !g:VeryLiteral
+  "   \\| echo "VeryLiteral " . (g:VeryLiteral ? "On" : "Off")<CR>
+  " if !hasmapto("<Plug>VLToggle")
+  "   nmap <unique> <Leader>vl <Plug>VLToggle
+  " endif
+  let &cpo = s:save_cpo | unlet s:save_cpo
+" }
+
+" Highlight anything past character 80 {
+    let g:marginHighlighted = 0
+    function! ToggleMarginHighlight()
+        highlight LineTooLong term=bold gui=bold ctermfg=red guifg=red
+        if g:marginHighlighted
+            let g:marginHighlighted = 0
+            match
+        else
+            let g:marginHighlighted = 1
+            " match LineTooLong /.\%>80v/
+            match LineTooLong /\%81v.\+/
+        endif
+    endfunction
+    nmap <leader>m ;silent exe "call ToggleMarginHighlight()"<CR>
+" }
+
+" MiniBufExpl {
+  if g:is_tabbed == 1
+    nnoremap <Leader>d :bd<CR>
+
+    let g:miniBufExplorerAutoStart = 0
+  else
+    nnoremap <Leader>d :MBEbd<CR>
+
+    let g:miniBufExplVSplit = 30   " Column width in chars
+    let g:miniBufExplBRSplit = 0   " Split on left
+
+    let g:miniBufExplorerAutoStart = 1
+    let g:miniBufExplBuffersNeeded = 0
+    let g:miniBufExplShowBufNumbers = 0
+    let g:miniBufExplCycleArround = 1
+  endif
+" }
+
+" argwrap {
+  " nnoremap <leader>= ;call BreakupLine()<CR>
+  nnoremap <silent> <Leader>= :ArgWrap<CR>
+
+  let g:argwrap_tail_comma_braces = '[{'
+" }
+
+" CamelCaseMotion {
+  " nmap <C-L> <Plug>CamelCaseMotion_w
+  " nmap <C-H> <Plug>CamelCaseMotion_b
+  omap <silent> .w <Plug>CamelCaseMotion_iw
+  xmap <silent> .w <Plug>CamelCaseMotion_iw
+" }
+
+" vim-husk {
+  " Map <M-B> and <M-F> (mapping <M-B> directly within mac doesn't work)
+  cnoremap <expr> ∫ husk#left()
+  cnoremap <expr> ƒ husk#right()
+" }
+
+" EasyMotion {
+    let g:EasyMotion_leader_key = ','
+" }
+
+" Arpeggio {
+  call arpeggio#load()
+  let g:arpeggio_timeoutlen = 60
+  " Note: Should include the noremap, but pear-tree overwrites esc
+  Arpeggio imap jk <Esc>
+  Arpeggio cnoremap jk <C-c>
+  Arpeggio vnoremap jk <Esc>
+  Arpeggio onoremap jk <Esc>
+  Arpeggio nmap we <Plug>(easymotion-s2)
+  Arpeggio vmap we <Plug>(easymotion-s2)
+
+  " Hack: Replace <M-e> from autopairs. Doesn't handle mixed [()] braces well
+  inoremap <M-e> <C-o>x<C-o>e<C-o>"-p<Left>
+  Arpeggio imap cv <M-e>
+" }
+
+" Coc seems great, but fails simple use cases with python e.g. from a non-~
+" directory, open ~/test.py : Autocomplete never works
+" To try: :CocStart after opening python file
+" coc {
+  if g:autocomplete_engine == 'coc'
+    " inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+
+    " This immediately exits :Command completion menu once pyls is loaded
+    " inoremap <silent><expr> <TAB>
+    "     \ pumvisible() ? "\<C-n>" :
+    "     \ <SID>check_back_space() ? "\<TAB>" :
+    "     \ coc#refresh()
+
+    let g:python3_host_prog = "/usr/local/bin/python3"
+
+    function! s:check_back_space() abort
+      let col = col('.') - 1
+      return !col || getline('.')[col - 1]  =~# '\s'
+    endfunction
+
+    inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+    inoremap <silent><expr> <C-X><C-O> coc#refresh()
+
+    let g:coc_start_at_startup = 1
+  endif
+" }
+
+" May be good - worth a try at some point
+" " Deoplete {
+"   let g:deoplete#enable_at_startup = 1
+"   let g:deoplete#enable_smart_case = 1
+"
+"   inoremap <silent><expr> <Tab> pumvisible() ? "\<C-N>" : "\<Tab>"
+"
+"   " <CR>: close popup and save indent.
+"   inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
+"   function! s:my_cr_function() abort
+"     return deoplete#close_popup() . "\<CR>"
+"   endfunction
+" " }
+
+" ncm2 {
+  if g:autocomplete_engine == 'ncm2'
+    " Ideally we'd use python 2 for jedi, but it seems to break ncm2
+    let g:python3_host_prog = "/usr/local/bin/python3"
+    let g:ncm2_jedi#python_version = 3
+    let g:ncm2_jedi#environment = '/usr/local/bin/python3'
+
+    " let g:python_host_prog = "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
+    " let g:ncm2_jedi#python_version = 2
+    " let g:ncm2_jedi#environment = '/Library/Frameworks/Python.framework/Versions/2.7/bin/python'
+
+    " let g:ncm2_jedi#environment = '/Users/jason.brewer/bin/py_for_jedi'
+    " let g:ncm2_jedi#settings = {
+    "       \ 'jedi.settings.auto_import_modules': ['tensorflow'],
+    "       \ }
+    autocmd BufEnter * call ncm2#enable_for_buffer()
+
+    " TODO: Overridden by ultisnips
+    inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+    inoremap <expr> <CR> (pumvisible() ? "\<c-y>\<cr>" : "\<CR>")
+
+    " inoremap <silent> <expr> <C-j> pumvisible() ? ncm2_ultisnips#expand_or("\<C-Y>", 'm') : "\<C-J>"
+    " TODO: Handles a few situations poorly (e.g. completing modules)
+    " Also doesn't trigger e.g. class -> UltiSnips
+    " inoremap <silent> <expr> <C-j>
+    "       \ complete_info(['selected'])['selected'] == -1
+    "       \ ? "\<C-Y>"
+    "       \ : ncm2_ultisnips#expand_or("\(", 'm')
+    inoremap <silent> <expr> <C-j>
+          \ complete_info(['selected'])['selected'] == -1
+          \ ? "\<C-R>=UltiSnips#ExpandSnippet()\<CR>"
+          \ : ncm2_ultisnips#expand_or("\(", 'm')
+
+    " ncm2/float-preview
+    let g:float_preview#docked = 1
+  endif
+" }
+
+" UltiSnips {
+  " c-j c-k for moving in snippet
+  let g:UltiSnipsExpandTrigger		= "<Plug>(ultisnips_expand)"
+  let g:UltiSnipsJumpForwardTrigger	= "<c-j>"
+  let g:UltiSnipsJumpBackwardTrigger	= "<c-k>"
+  " Enable?
+  let g:UltiSnipsRemoveSelectModeMappings = 1
+
+  let g:UltiSnipsSnippetDirectories = [expand('~/VimConfig/ultisnips')]
+
+  " Tip: To edit snippets, use :UltiSnipsEdit
+" }
+
+" jedi-vim {
+  let g:jedi#force_py_version = 3
+
+  let g:jedi#auto_vim_configuration = 0
+  let g:jedi#popup_on_dot = 0
+  let g:jedi#popup_select_first = 0
+  let g:jedi#use_tag_stack = 1
+
+  " Required for show_call_signatures = 2
+  set noshowmode
+
+  " 1 shows inline, 2 shows in command window
+  "
+  " 1 is too noisy to be automatic, but much more helpful (multiline). In
+  " future, consider instead setting the call signatures to a hotkey
+  " For now, use ncm2
+  let g:jedi#show_call_signatures = 2
+  let g:jedi#show_call_signatures_delay = 0
+
+  let g:jedi#completions_enabled = 0
+  let g:jedi#smart_auto_mappings = 0
+
+  " Bindings
+  let g:jedi#goto_command = '<Space>jd'
+  let g:jedi#goto_assignments_command = '<Space>jg'
+  let g:jedi#usages_command = '<Space>jn'
+  let g:jedi#rename_command = '<Space>jr'
+  " let g:jedi#documentation_command = 'K'
+
+  " Debug:
+  " :call jedi#enable_debugging()
+" }
+
+" LanguageClient-neovim {
+  " let g:LanguageClient_serverCommands = {
+  "     \ 'python': ['/usr/local/bin/pyls'],
+  "     \ }
+" }
+
+" ale {
+  " function! AleStatusLineFlag()
+  "   let counts = ale#statusline#Count(bufnr(''))
+  "   let errors = counts['error']
+  "   let warnings = counts['warning']
+  "   if errors > 0 || warnings > 0
+  "     return 'err: ' . errors . ', warn: ' . warnings . ' '
+  "   else
+  "     return ""
+  "   endif
+  " endfunction
+
+  " Note: Show errors with :lopen
+
+  let g:ale_sign_column_always = 1
+  let g:ale_lint_delay = 500
+
+  let g:ale_python_flake8_options = '--config ~/VimConfig/.flake8-vim'
+  let g:ale_python_pylint_options = '--config ~/VimConfig/.pylintrc'
+
+  " TODO: Consider g:ale_lint_on_text_changed = 'normal' (lower CPU usage)
+
+  " TODO: Update status line (in ale faq)
+  " TODO: Consider the below
+  " nnoremap <space>l :lnext<CR>
+  " nnoremap <space>p :lprevious<CR>
+  " nnoremap <space>r :lrewind<CR>
+" }
+
+" pear-tree seems slightly better, but doesnt work
+" This overwrites <CR> bindings (cancel autocomplete popup)
+" " lexima (auto-pair match) {
+"   let g:lexima_enable_basic_rules = 1
+"   let g:lexima_enable_newline_rules = 1
+"   let g:lexima_enable_endwise_rules = 1
+" " }
+
+" AutoPairs {
+  let g:AutoPairsCenterLine = 0
+  " imap <C-l> <End>;
+" }
+
+" Does not work - try {'a':<CR>'b': 15} - mismatches quotes
+" " Likely due to conflict in <CR> binding
+" " pear-tree {
+"   let g:pear_tree_smart_openers = 1
+"   let g:pear_tree_smart_closers = 1
+"   let g:pear_tree_smart_backspace = 1
+" " }
+
+" NeoFormat {
+  " Note: Includes several hacky changes to make Neoformat send the entire
+  " buffer, but pass --lines here. Search neoformat.vim for
+  " using_visual_selection to view
+
+  " Config in ~/.style.yapf
+  let g:neoformat_python_yapf_lines = {
+        \ 'exe': 'yapf',
+        \ 'args': [],
+        \ 'use_lines': 1,
+        \ 'replace': 0,
+        \ 'stdin': 1,
+        \ 'valid_exit_codes': [0],
+        \ 'no_append': 1,
+        \ }
+  let g:neoformat_enabled_python = ['yapf_lines']
+
+  vnoremap <Space>= :Neoformat<CR>
+" }
+
+" vim-textobj-python {
+  xmap aC <Plug>(textobj-python-class-a)
+  omap aC <Plug>(textobj-python-class-a)
+  xmap iC <Plug>(textobj-python-class-i)
+  omap iC <Plug>(textobj-python-class-i)
+" }
+
+" braceless {
+  autocmd FileType python BracelessEnable +indent +highlight
+" }
+
+" " hiPairs {
+"   " let g:hiPairs_enable_matchParen = 0
+"   " let g:hiPairs_stopline_more = 200
+"   let g:hiPairs_hl_matchPair = {
+"         \ 'term'    : 'underline,bold',
+"         \ 'cterm'   : 'underline,bold',
+"         \ 'ctermfg' : 'NONE',
+"         \ 'ctermbg' : 'NONE',
+"         \ 'gui'     : 'underline,bold',
+"         \ 'guifg'   : 'NONE',
+"         \ 'guibg'   : '#8f810b',
+"         \ }
+" " }
+
+" indentLine {
+  " Config from ayu-theme/ayu-vim - chars didn't copy correctly from markdown
+  let g:indentLine_char = ''
+  let g:indentLine_first_char = ''
+  let g:indentLine_showFirstIndentLevel = 1
+  let g:indentLine_setColors = 0
+" }
+
+" vim-signify {
+  let g:signify_vcs_list = ['git']
+
+  omap ig <Plug>(signify-motion-inner-pending)
+  xmap ig <Plug>(signify-motion-inner-visual)
+  omap ag <Plug>(signify-motion-outer-pending)
+  xmap ag <Plug>(signify-motion-outer-visual)
+" }
+
+" git-messenger.vim {
+  nnoremap <Space>gm :GitMessenger<CR>
+" }
+
+" gutentags {
+  " This doesn't run gutentags inside these types - but still runs it *for* all
+  " files in the project
+  " let g:gutentags_exclude_filetypes = ['javascript', 'cpp', 'c', 'java']
+  let g:gutentags_ctags_exclude = [
+        \ '*.c',
+        \ '*.cc',
+        \ '*.cpp',
+        \ '*.css',
+        \ '*.h',
+        \ '*.java',
+        \ '*.js',
+        \ '*.json',
+        \ '*.properties',
+        \ 'build',
+        \ 'Makefile',
+        \ ]
+" }
+
+" vim-move {
+  " <M-j>
+  vmap ∆ <Plug>MoveBlockDown
+  " <M-k>
+  vmap ˚ <Plug>MoveBlockUp
+  " <M-h>
+  vmap ˙ <Plug>MoveBlockLeft
+  " <M-l>
+  vmap ¬ <Plug>MoveBlockRight
+
+  " <M-j>
+  nmap ∆ <Plug>MoveLineDown
+  " <M-k>
+  nmap ˚ <Plug>MoveLineUp
+  " <M-h>
+  nmap ˙ <Plug>MoveCharLeft
+  " <M-l>
+  nmap ¬ <Plug>MoveCharRight
+" }
+"
+" FlyGrep.vim {
+  let g:FlyGrep_search_tools = ['rg']
+
+  " SpaceVim fixes
+  let g:spacevim_debug_level = 0
+
+  " Overlaps denite/fzf bindings
+  nnoremap <Space>fs :FlyGrep<CR>
+  nnoremap <silent> <Space>fp :call FlyGrep#open({'cmd': 'rg_python_files'})<CR>
+
+  " For other options:
+  " - autoload/SpaceVim/plugins/flygrep.vim : SpaceVim#plugins#flygrep#open
+  " - autoload/SpaceVim/mapping/search.vim : Better integrated mappings
+  " TODO: Other extensions
+  " - Search open buffers
+  " - Search specific file types (best: Parse input expr to filter)
+  " - Search current word
+" }
+
+" denite {
+  if g:file_finder == 'denite'
+    " From sodiumjoe/dotfiles
+
+    " reset 50% winheight on window resize
+    augroup deniteresize
+      autocmd!
+      autocmd VimResized,VimEnter * call denite#custom#option('default',
+            \'winheight', winheight(0) / 2)
+    augroup end
+
+    call denite#custom#option('default', {
+          \ 'prompt': '❯'
+          \ })
+
+    call denite#custom#var('file/rec', 'command',
+          \ ['fd', '-H', '--full-path'])
+    call denite#custom#var('grep', 'command', ['rg'])
+    call denite#custom#var('grep', 'default_opts',
+          \ ['--hidden', '--vimgrep', '--smart-case'])
+    call denite#custom#var('grep', 'recursive_opts', [])
+    call denite#custom#var('grep', 'pattern_opt', ['--regexp'])
+    call denite#custom#var('grep', 'separator', ['--'])
+    call denite#custom#var('grep', 'final_opts', [])
+    " call denite#custom#map('insert', '<Esc>', '<denite:enter_mode:normal>',
+    "       \'noremap')
+    " call denite#custom#map('normal', '<Esc>', '<NOP>',
+    "       \'noremap')
+    " call denite#custom#map('insert', '<C-v>', '<denite:do_action:vsplit>',
+    "       \'noremap')
+    " call denite#custom#map('normal', '<C-v>', '<denite:do_action:vsplit>',
+    "       \'noremap')
+    " call denite#custom#map('normal', 'dw', '<denite:delete_word_after_caret>',
+    "       \'noremap')
+
+    nnoremap <Space>fv :<C-u>Denite file/rec<CR>
+    nnoremap <Space>fb :<C-u>Denite buffer<CR>
+    nnoremap <Space>ff :<C-u>DeniteBufferDir file/rec<CR>
+    nnoremap <Space>f8 :<C-u>DeniteCursorWord grep:. -mode=normal<CR>
+    nnoremap <Space>f/ :<C-u>Denite grep:. -mode=normal<CR>
+    nnoremap <Space>fl/ :<C-u>DeniteBufferDir grep:. -mode=normal<CR>
+    nnoremap <Space>fr :<C-u>Denite -resume -cursor-pos=+1<CR>
+    nnoremap <Space>f. :<C-u>Denite register:. -mode=normal<CR>
+    " references source from LanguageClient
+    " Note: Probably broken
+    " nnoremap <Space>fs :<C-u>Denite references -mode=normal<CR>
+    nnoremap <Space>ft :<C-u>Denite tag<CR>
+    nnoremap <Space>fd :<C-u>Denite directory_rec<CR>
+    nnoremap <Space>fj :<C-u>Denite jump -mode=normal<CR>
+    nnoremap <Space>fo :<C-u>Denite outline -mode=normal<CR>
+
+    " TODO: Try -split=floating for some
+
+    " Note: Also <Space>fs - FlyGrep
+
+    hi link deniteMatchedChar Special
+  end
+" }
+
+" pyparens.nvim {
+  let g:pyparens_hl_group = 'SurroundingBrace'
+
+  hi SurroundingBrace guibg=grey50 guifg=#dfffdf
+
+  let g:pyparens_pairs = [[ '\{', '\}' ], [ '\(', '\)' ], [ '\[', '\]' ]]
+" }
+
+" vim-session {
+  let g:session_directory = '~/vim-sessions'
+  nnoremap <Space>ss :SaveSession 
+  nnoremap <Space>so :OpenSession 
+  " TODO: Learn tab sessions/SaveTabSession
+  " TODO: Probably enable
+  let g:session_autosave = 'no'
+" }
+
+" vista.vim {
+  let g:vista_fzf_preview = ['right:50%']
+  let g:vista#renderer#enable_icon = 1
+  " let g:vista_icon_indent = ["╰─▸ ", "├─▸ "]
+  let g:vista_icon_indent = ["▸ ", ""]
+  let g:vista#renderer#icons = {
+  \   "function": "\uf794",
+  \   "variable": "\uf71b",
+  \  }
+" }
+
+" semshi {
+  function SemshiCustomHighlights()
+    " Defaults at https://github.com/numirias/semshi
+    hi semshiSelected        guifg=#ffffff guibg=#6700af
+    hi semshiSelected        guifg=#ffffff guibg=#77003f
+  endfunction
+  autocmd FileType python call SemshiCustomHighlights()
+" }
+
+" nvim-miniyank {
+  let g:miniyank_maxitems = 20
+  let g:miniyank_filename = expand("~/.miniyank.mpack")
+
+  " In theory https://github.com/bfredl/nvim-miniyank/issues/19 will allow this
+  " to integrate with fzf, but doesn't seem to work. Denite is also supported
+  " natively. We alter the fzf source below to work
+
+  function! FZFMiniYankList() abort
+    function! KeyValue(key, val)
+      let line = join(a:val[0], '\n')
+      if (a:val[1] ==# 'V')
+        let line = '\n'.line
+      endif
+      return a:key.' '.line
+    endfunction
+    return map(miniyank#read(), function('KeyValue'))
+  endfunction
+
+  " Taken from miniyank#putreg
+  function! FZFMiniYankPutReg(data,cmd) abort
+      let regsave = [getreg('0'), getregtype('0')]
+      call setreg('0', a:data[0], a:data[1])
+      let s:visual = ''
+      let s:count = 1
+      execute 'normal! '.(s:visual ? 'gv' : '').s:count.'"0'.a:cmd
+      call setreg('0', regsave[0], regsave[1])
+      let s:last = a:data[0]
+  endfunction
+
+  function! FZFMiniYankHandler(cmd, line) abort
+    let s:pos = 0
+    echom "Line: " . a:line
+    let key = substitute(a:line, ' .*', '', '')
+    echom "Key: " . key
+    if !empty(a:line)
+      let yanks = miniyank#read()[key]
+      echom "Yanks: " . join(yanks, '|')
+      call FZFMiniYankPutReg(yanks, a:cmd)
+      echom "End call"
+    endif
+  endfunction
+
+  " command YanksAfter call fzf#run(fzf#wrap('YanksAfter', {
+  " \ 'source':  FZFYankList(),
+  " \ 'sink':    function('FZFYankHandler', ['p']),
+  " \ 'options': '--no-sort --prompt="Yanks-p> "',
+  " \ }))
+
+  " command YanksBefore call fzf#run(fzf#wrap('YanksBefore', {
+  " \ 'source':  FZFYankList(),
+  " \ 'sink':    function('FZFYankHandler', ['P']),
+  " \ 'options': '--no-sort --prompt="Yanks-P> "',
+  " \ }))
+
+  command YanksAfter call fzf#run({
+        \'source': FZFMiniYankList(),
+        \'sink': function('FZFMiniYankHandler', ['p']),
+        \'down': '50%',
+        \'options': '--no-sort --prompt "Yanks-p> "',
+        \'window': 'call FloatingFZF()',
+  \})
+
+  command YanksBefore call fzf#run({
+        \'source': FZFMiniYankList(),
+        \'sink': function('FZFMiniYankHandler', ['P']),
+        \'down': '50%',
+        \'options': '--no-sort --prompt "Yanks-p> "',
+        \'window': 'call FloatingFZF()',
+  \})
+
+  nnoremap <silent> <Space>cl :YanksAfter<CR>
+  nnoremap <silent> <Space>cL :YanksBefore<CR>
+" }
+
+" fzf {
+  if g:file_finder == 'fzf'
+    let g:fzf_use_floating_window = 1
+
+    " TODO: Mirror mode maps and finder programs from denite
+    " TODO: To speed file search, `export FZF_DEFAULT_COMMAND='fd --type '`
+    " TODO: Fix fzf_use_floating_window (add to dict iff set)
+
+    " nnoremap <Space>fv :<C-u>Files <C-R>=getcwd()<CR><CR>
+    nnoremap <silent> <Space>fv :<C-u>call fzf#run({
+          \ 'source': 'fd --type f --exclude django_service --exclude django_server --exclude docker_files --exclude java --exclude resource',
+          \ 'sink': 'e',
+          \ 'down': '50%',
+          \ 'dir': '<C-R>=getcwd()<CR>',
+          \ 'options': '--prompt "<C-R>=getcwd()<CR>/"',
+          \ 'window': 'call FloatingFZF()',
+    \ })<CR>
+    " nnoremap <Space>ff :<C-u>Files <C-R>=expand('%:h')<CR><CR>
+    nnoremap <silent> <Space>ff :<C-u>call fzf#run({
+          \ 'source': 'fd --type f --exclude django_service --exclude django_server --exclude docker_files --exclude java --exclude resource',
+          \ 'sink': 'e',
+          \ 'down': '50%',
+          \ 'dir': '<C-R>=expand("%:h")<CR>',
+          \ 'options': '--prompt "<C-R>=expand("%:h")<CR>/"',
+          \ 'window': 'call FloatingFZF()',
+    \ })<CR>
+    nnoremap <Space>fb :<C-u>Buffers<CR>
+    nnoremap <Space>fg :<C-u>GFiles<CR>
+
+    nnoremap <Space>f8 :<C-u>Rg <C-R><C-W><CR>
+    nnoremap <Space>f/ :<C-u>Rg<Space>
+    nnoremap <Space>ft :<C-u>Tags<CR>
+    nnoremap <Space>fl :<C-u>Lines<CR>
+
+    function! SourceGlobalTags()
+      let old_tags_val = &tags
+      let &tags = expand("~/python_library_tags/tags")
+      call fzf#vim#tags('')
+      let &tags = old_tags_val
+    endfunction
+
+    " tags from site-projects
+    nnoremap <silent> <Space>fs :<C-u>call SourceGlobalTags()<CR>
+
+    " " nnoremap <Space>fl/ :<C-u>DeniteBufferDir grep:. -mode=normal<CR>
+    " " nnoremap <Space>fr :<C-u>Denite -resume -cursor-pos=+1<CR>
+    " " nnoremap <Space>f. :<C-u>Denite register:. -mode=normal<CR>
+    " nnoremap <Space>ft :<C-u>Denite tag<CR>
+    " nnoremap <Space>fd :<C-u>Denite directory_rec<CR>
+    " nnoremap <Space>fj :<C-u>Denite jump -mode=normal<CR>
+    " nnoremap <Space>fo :<C-u>Denite outline -mode=normal<CR>
+
+    " TODO: Try -split=floating for some
+
+    " Note: Also <Space>fs - FlyGrep
+
+    " From https://kassioborges.dev/2019/04/10/neovim-fzf-with-a-floating-window.html
+    if g:fzf_use_floating_window == 1
+      " Reverse the layout to make the FZF list top-down
+      " let $FZF_DEFAULT_OPTS='--layout=reverse'
+
+      " Using the custom window creation function
+      " Only for fzf.vim
+      let g:fzf_layout = { 'window': 'call FloatingFZF()' }
+
+      autocmd FileType fzf call BracelessUnmarkColumn()
+
+      " Hacky - somehow when the matches get copied to the new window, their ids
+      " change, and even braceless doesn't seem to have track of them - just
+      " delete any braceless matches
+      function! BracelessUnmarkColumn()
+        for m in getmatches()
+          if m.group == 'BracelessIndent'
+            call matchdelete(m.id)
+          end
+        endfor
+      endfunction
+
+      " Function to create the custom floating window
+      function! FloatingFZF()
+        " creates a scratch, unlisted, new, empty, unnamed buffer
+        " to be used in the floating window
+        let buf = nvim_create_buf(v:false, v:true)
+
+        let height_frac = 0.8
+        let height = float2nr(&lines * height_frac)
+        let width = float2nr(&columns * 0.9)
+        " horizontal position (centralized)
+        let horizontal = float2nr((&columns - width) / 2)
+        " vertical position (one line down of the top)
+        " let vertical = 1
+        let vertical = ceil(&lines * (1 - height_frac))
+
+        let opts = {
+              \ 'relative': 'editor',
+              \ 'row': vertical,
+              \ 'col': horizontal,
+              \ 'width': width,
+              \ 'height': height
+              \ }
+
+        " open the new window, floating, and enter to it
+        call nvim_open_win(buf, v:true, opts)
+      endfunction
+    end
+  end
+" }
+
+" Doesn't set :compiler correctly, seems less fully featured than pytest.vim
+" " vim-test {
+"   let test#strategy = 'dispatch'
+"   " pyunit is the built in unittest module, though doesn't set :compiler
+"   " correctly
+"   " let test#python#runner = 'pyunit'
+"   let test#python#runner = 'pytest'
+" " }
+
+" pytest.vim {
+  nnoremap <Space>tr :Pytest file<CR>
+  nnoremap <Space>tm :Pytest method<CR>
+  nnoremap <Space>tR :Pytest file --pdb<CR>
+  nnoremap <Space>tM :Pytest method --pdb<CR>
+  nnoremap <Space>tu :Pytest first<CR>
+  nnoremap <Space>td :Pytest last<CR>
+  nnoremap <Space>tj :Pytest next<CR>
+  nnoremap <Space>tk :Pytest previous<CR>
+  nnoremap <Space>ts :Pytest session<CR>
+  " Prints larger error message
+  nnoremap <Space>te :Pytest error<CR>
+
+  " TODO: Try session and fails to view errors
+" }
+
+" Vimwiki {
+  let g:vimwiki_hl_headers = 1
+  let g:vimwiki_conceallevel = 0
+  " inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+
+  " Note: Could put in ftplugin, but nice to have here. Resolve conflict between
+  " vimwiki and YCM
+  autocmd FileType vimwiki inoremap <expr> <buffer> <Tab> pumvisible() ? "\<C-n>" : vimwiki#tbl#kbd_tab()
+" }
+
+" airline {
+  let g:airline#extensions#branch#enabled = 0
+  " Disable branch name, keep modification/icon
+  " let g:airline#extensions#branch#format = 'CustomBranchName'
+  " function! CustomBranchName(name)
+  "   return ''
+  " endfunction
+
+  " Errors and warnings come and go frequently (TODO: consider lowering ale run
+  " interval). For now, put it first so it minimizes reflow
+  let g:airline#extensions#default#layout = [
+      \ [ 'a', 'b', 'c' ],
+      \ [ 'error', 'warning', 'x', 'y', 'z' ]
+      \ ]
+
+  " Temporarily disable - noisy while typing - hopefully can figure out how to
+  " enable outside current line
+  let g:airline#extensions#whitespace#enabled = 1
+
+  " let g:airline_section_b = '%{airline#extensions#hunks#get_hunks()}'
+
+  " Hunks has priority, several other sections are unnecessary unless we have
+  " enough width
+  call airline#parts#define_minwidth('hunks', 50)
+  call airline#parts#define_minwidth('filename', 120)
+  call airline#parts#define_minwidth('bufferline', 120)
+  call airline#parts#define_minwidth('tagbar', 120)
+  call airline#parts#define_minwidth('filetype', 120)
+  call airline#parts#define_minwidth('virtualenv', 120)
+  call airline#parts#define_minwidth('fileencoding', 120)
+  call airline#parts#define_minwidth('fileformat', 120)
+
+  let g:airline_powerline_fonts = 1
+  let g:airline_skip_empty_sections = 1
+
+  " Whitespace detection in vimrc is broken, since whitespace can be intentional
+  au filetype vim silent! call airline#extensions#whitespace#disable()
+
+  " Theme: Notes:
+  " These seem ok at an initial pass
+  " - base16_eighties
+  " - base16_harmonic16
+  " - base16_ocean
+  " - base16_tomorrow
+  " - onedark
+  " In general, base16 themes seem nice - more understated. Want deliberately
+  " very subtle colors here compared to core theme
+  " To test: AirlineTheme base16_ocean
+  let g:airline_theme = 'base16_ocean'
+" }
+
+if filereadable(expand("~/dotfiles_snap/_nvimrc"))
+  source ~/dotfiles_snap/_nvimrc
+endif
