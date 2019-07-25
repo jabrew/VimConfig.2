@@ -37,7 +37,7 @@ endif
   Plugin 'tpope/vim-abolish'
   Plugin 'Lokaltog/vim-easymotion'
   Plugin 'hynek/vim-python-pep8-indent'
-  Plugin 'google/yapf', { 'rtp': 'plugins/vim' }
+  " Plugin 'google/yapf', { 'rtp': 'plugins/vim' }
   Plugin 'tpope/vim-ragtag'
   Plugin 'tpope/vim-repeat'
   Plugin 'tpope/vim-surround'
