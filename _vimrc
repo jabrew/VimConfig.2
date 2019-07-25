@@ -1,5 +1,16 @@
 set rtp+=~/VimConfig
 
+if has("win32")
+  let g:use_ycm = 1
+  " Temporary: jedi doesn't load correctly without this in windows (and maybe
+  " homebrew python). Needs to be before the runtimepath updates below
+  python3 import sys; sys.executable = 'C:/Programs/Python/Python37/python.exe'
+  python3 sys.path.append('C:/Users/Brew/Anaconda3/Lib')
+  python3 sys.path.append('C:/Users/Brew/Anaconda3/Lib/site-packages')
+else
+  let g:use_ycm = 1
+endif
+
 " Vundle {
   set nocompatible              " be iMproved, required
   filetype off                  " required
@@ -26,6 +37,7 @@ set rtp+=~/VimConfig
   Plugin 'tpope/vim-abolish'
   Plugin 'Lokaltog/vim-easymotion'
   Plugin 'hynek/vim-python-pep8-indent'
+  " Plugin 'google/yapf', { 'rtp': 'plugins/vim' }
   Plugin 'tpope/vim-ragtag'
   Plugin 'tpope/vim-repeat'
   Plugin 'tpope/vim-surround'
@@ -59,6 +71,23 @@ set rtp+=~/VimConfig
   " Jinja2 is about as close as we can get to nunjucks
   " Plugin 'Glench/Vim-Jinja2-Syntax'
   Plugin 'solarnz/thrift.vim'
+
+  if !g:use_ycm
+    " Disabled (doesn't work 2018-01-31)
+    " if !has('nvim')
+    "   Plugin 'roxma/vim-hug-neovim-rpc'
+    " endif
+    " Plugin 'roxma/nvim-completion-manager'
+
+    if has('nvim')
+      Plugin 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+    else
+      Plugin 'Shougo/deoplete.nvim'
+      Plugin 'roxma/nvim-yarp'
+      Plugin 'roxma/vim-hug-neovim-rpc'
+    endif
+    Plugin 'zchee/deoplete-jedi'
+  endif
 
   " Wiki
   Plugin 'vimwiki/vimwiki'
@@ -118,7 +147,9 @@ set rtp+=~/VimConfig
   " see :h vundle for more details or wiki for FAQ
   " Put your non-Plugin stuff after this line
 " }
-set rtp+=~/.vim/manual-bundle/YouCompleteMe
+if g:use_ycm
+  set rtp+=~/.vim/manual-bundle/YouCompleteMe
+endif
 
 " Colors {
   " let g:molokai_original = 1
@@ -187,6 +218,11 @@ set rtp+=~/.vim/manual-bundle/YouCompleteMe
     let g:is_wiki = 1
   else
     let g:is_wiki = 0
+  endif
+  if has("win32")
+    let g:is_pc = 1
+  else
+    let g:is_pc = 0
   endif
 " }
 
@@ -604,7 +640,10 @@ nnoremap <silent> <leader>h :silent :nohlsearch<CR>
 " let OmniCpp_ShowPrototypeInAbbr = 1
 " let OmniCpp_DefaultNamespaces = ["std", "boost", "std::tr1"]
 " let OmniCpp_MayCompleteScope = 1
-set completeopt=menu,preview
+" Preview also shows help for the relevant function - but dissappears at an
+" inconvenient time
+" set completeopt=menu,preview
+set completeopt=menu
 "set completeopt=menuone,menu,longest,preview
 
 " Header source switching
@@ -677,15 +716,15 @@ let vimclojure#NailgunClient = 'd:\Programs\Development\vimclojure-2.2.0\ng.exe'
 " }
 
 " Syntastic {
-    " Currently too slow to enable on fbcode
+    " Currently disabled
     let g:syntastic_disabled_filetypes = ['cpp', 'java']
     let g:syntastic_mode_map = {
         \ 'mode': 'active',
         \ 'active_filetypes': ['ruby', 'php', 'python'],
         \ 'passive_filetypes': ['cpp', 'java']
     \ }
-    let g:syntastic_python_checkers = ['flake8']
-    let g:syntastic_python_flake8_args = "--config ~/VimConfig/.flake8-vim"
+    let g:syntastic_python_flake8_args = "--config " . expand("~/VimConfig/.flake8-vim")
+    let g:syntastic_python_checkers = ["flake8"]
 
     let g:tagbar_type_php = {
         \ 'ctagstype' : 'php',
@@ -815,44 +854,52 @@ let vimclojure#NailgunClient = 'd:\Programs\Development\vimclojure-2.2.0\ng.exe'
   imap <C-\> <C-X>/
 " }
 
-" YouCompleteMe {
-  " Manual install from
-  " https://bitbucket.org/Haroogan/vim-youcompleteme-for-windows
-  " let g:ycm_global_ycm_extra_conf = '~/VimConfig/.ycm_extra_conf.py'
-  let g:ycm_confirm_extra_conf = 0
+if g:use_ycm
+  " YouCompleteMe {
+    " Note: To fix utf-8 errors, update third_party/ycmd/ycmd/utils.py from:
+    "   return str( value, 'utf8' )
+    " to:
+    "   return str( value, 'utf8', errors='ignore' )
+    " Manual install from
+    " https://bitbucket.org/Haroogan/vim-youcompleteme-for-windows
+    " In vc++ 2008 command prompt - python install.py --msvc 12
+    " let g:ycm_global_ycm_extra_conf = '~/VimConfig/.ycm_extra_conf.py'
+    let g:ycm_confirm_extra_conf = 0
+    set encoding=utf-8
 
-  " Very nice, but throws random errors in fbcode
-  let g:ycm_register_as_syntastic_checker = 0
-  let g:ycm_collect_identifiers_from_comments_and_strings = 1
-  let g:ycm_autoclose_preview_window_after_completion = 0
-  let g:ycm_autoclose_preview_window_after_insertion = 1
-  let g:ycm_complete_in_strings = 1
-  let g:ycm_complete_in_comments = 1
+    " Very nice, but throws random errors in fbcode
+    let g:ycm_register_as_syntastic_checker = 0
+    let g:ycm_collect_identifiers_from_comments_and_strings = 1
+    let g:ycm_autoclose_preview_window_after_completion = 0
+    let g:ycm_autoclose_preview_window_after_insertion = 1
+    let g:ycm_complete_in_strings = 1
+    let g:ycm_complete_in_comments = 1
 
-  " E.g. open the preview window (and other windows) below the current window
-  set splitbelow
+    " E.g. open the preview window (and other windows) below the current window
+    set splitbelow
 
-  " let g:ycm_show_diagnostics_ui = 1
-  " let g:ycm_error_symbol = 'x'
-  " let g:ycm_warning_symbol = '!'
-  " let g:ycm_enable_diagnostic_signs = 1
-  " let g:ycm_enable_diagnostic_highlighting = 1
-  " let g:ycm_echo_current_diagnostic = 1
+    " let g:ycm_show_diagnostics_ui = 1
+    " let g:ycm_error_symbol = 'x'
+    " let g:ycm_warning_symbol = '!'
+    " let g:ycm_enable_diagnostic_signs = 1
+    " let g:ycm_enable_diagnostic_highlighting = 1
+    " let g:ycm_echo_current_diagnostic = 1
 
-  " Default blacklist includes text also
-  let g:ycm_filetype_whitelist = { '*': 1 }
-  "  \ 'vimwiki' : 1,
-  let g:ycm_filetype_blacklist = {
-    \ 'tagbar' : 1,
-    \ 'qf' : 1,
-    \ 'notes' : 1,
-    \ 'markdown' : 1,
-    \ 'unite' : 1,
-    \ 'pandoc' : 1,
-    \ 'infolog' : 1,
-    \ 'mail' : 1
-  \ }
-" }
+    " Default blacklist includes text also
+    let g:ycm_filetype_whitelist = { '*': 1 }
+    "  \ 'vimwiki' : 1,
+    let g:ycm_filetype_blacklist = {
+      \ 'tagbar' : 1,
+      \ 'qf' : 1,
+      \ 'notes' : 1,
+      \ 'markdown' : 1,
+      \ 'unite' : 1,
+      \ 'pandoc' : 1,
+      \ 'infolog' : 1,
+      \ 'mail' : 1
+    \ }
+  " }
+endif
 
 " Obsession (session manager) {
   " TODO: If using this, use expand(~/vim-sessions)
@@ -949,6 +996,30 @@ let vimclojure#NailgunClient = 'd:\Programs\Development\vimclojure-2.2.0\ng.exe'
   let g:jedi#rename_command = '<Space>jr'
   " let g:jedi#documentation_command = 'K'
 " }
+
+if !g:use_ycm
+  " nvim-completion-manager {
+    " NOTES:
+    " - Doesn't work (windows, 2017-12-10)
+    " - Doesn't pull correct sources (tries to complete python with css), omnifunc
+    "   not set
+    " set encoding=utf-8
+    " let $NVIM_PYTHON_LOG_FILE="C:/temp_ncm_logs/"
+    " let $NVIM_NCM_LOG_LEVEL="DEBUG"
+    " let $NVIM_NCM_MULTI_THREAD=0
+  " }
+
+  " deoplete {
+    let g:deoplete#enable_at_startup = 1
+    let g:deoplete#enable_camel_case = 1
+    let g:deoplete#auto_complete_delay = 0
+    let g:python3_host_prog = 'python'
+
+    set encoding=utf-8
+    inoremap <silent><expr> <TAB> pumvisible() ? "\<C-n>" : "\<Tab>"
+  "     inoremap <expr> <Tab> pumvisible() ? "\<C-y>" : "\<Tab>"
+  " }
+endif
 
 if has('win32')
   source ~/VimConfig/_vimrc.windows

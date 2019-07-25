@@ -50,16 +50,19 @@ else
   " Regular vim
   " winpos 645 23
 
-  " Desktop (windows)
-  " winpos 247 31
-
   " winpos 1085 23
 
   " Dell Monitor, large text
   " winpos 325 23
 
-  " Dell Monitor, smaller text (mac)
-  winpos 645 23
+  if g:is_pc
+    " Desktop (windows)
+    winpos 247 31
+    autocmd GUIEnter * :winpos 247 31
+  else
+    " Dell Monitor, smaller text (mac)
+    winpos 645 23
+  endif
 
   set co=115
   set lines=40
