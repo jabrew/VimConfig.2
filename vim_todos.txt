@@ -119,6 +119,7 @@
 - Zsh: https://github.com/denysdovhan/spaceship-prompt
 - Config to ~/.config/powerline-shell/config.json
   - Reload with powerline-daemon --replace (until libzpython)
+- Better git info: https://github.com/jaspernbrouwer/powerline-gitstatus
 
 = Todo for later =
 
