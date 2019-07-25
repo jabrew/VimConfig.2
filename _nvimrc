@@ -156,9 +156,15 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
   " Alternative: gundo
   " Forks and extends gundo
   call dein#add('simnalamburt/vim-mundo', {'on_cmd' : 'MundoToggle'})
-  call dein#add('vim-scripts/swap-parameters')
+  " Works ok, but requires python2
+  " call dein#add('vim-scripts/swap-parameters')
+  " Way better than swap-parameters, but bindings conflict with tcomment (net:
+  " get rid of tcomment)
+  " g<, g> to move param, gs to enter swap mode
+  call dein#add('machakann/vim-swap')
   " Alternative: https://github.com/tyru/caw.vim
-  call dein#add('tomtom/tcomment_vim')
+  " call dein#add('tomtom/tcomment_vim')
+  call dein#add('tpope/vim-commentary')
   call dein#add('tpope/vim-abolish')
   " call dein#add('Lokaltog/vim-easymotion')
   call dein#add('easymotion/vim-easymotion')
@@ -873,7 +879,7 @@ syntax enable
   " Enable?
   let g:UltiSnipsRemoveSelectModeMappings = 1
 
-  let g:UltiSnipsSnippetDirectories = [$HOME . '/VimConfig/ultisnips']
+  let g:UltiSnipsSnippetDirectories = [expand('~/VimConfig/ultisnips')]
 
   " Tip: To edit snippets, use :UltiSnipsEdit
 " }
@@ -1163,6 +1169,8 @@ syntax enable
   nnoremap <Space>ss :SaveSession 
   nnoremap <Space>so :OpenSession 
   " TODO: Learn tab sessions/SaveTabSession
+  " TODO: Probably enable
+  let g:session_autosave = 'no'
 " }
 
 " vista.vim {
@@ -1187,7 +1195,7 @@ syntax enable
 
 " nvim-miniyank {
   let g:miniyank_maxitems = 20
-  let g:miniyank_filename = $HOME . "/.miniyank.mpack"
+  let g:miniyank_filename = expand("~/.miniyank.mpack")
 
   " In theory https://github.com/bfredl/nvim-miniyank/issues/19 will allow this
   " to integrate with fzf, but doesn't seem to work. Denite is also supported
@@ -1296,7 +1304,7 @@ syntax enable
 
     function! SourceGlobalTags()
       let old_tags_val = &tags
-      let &tags = $HOME . "/python_library_tags/tags"
+      let &tags = expand("~/python_library_tags/tags")
       call fzf#vim#tags('')
       let &tags = old_tags_val
     endfunction
@@ -1454,4 +1462,6 @@ syntax enable
   let g:airline_theme = 'base16_ocean'
 " }
 
-source ~/dotfiles_snap/_nvimrc
+if filereadable(expand("~/dotfiles_snap/_nvimrc"))
+  source ~/dotfiles_snap/_nvimrc
+endif
