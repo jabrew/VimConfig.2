@@ -109,6 +109,13 @@ Conflicts with <CR> mappings
     - Syntax
     - Sentence
     - Line
+- Exchange two selections
+  - Even supports .
+  - https://github.com/tommcdo/vim-exchange
+
+- Moving arguments (alternatives to vim-swap)
+  - vim-argumentative
+  - sideways.vim
 
 = Clipboard/Yank =
 
