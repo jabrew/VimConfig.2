@@ -9,6 +9,12 @@
 - deoplete
   - https://github.com/Shougo/echodoc.vim
 
+= Folds =
+
+- tmhedberg/SimpylFold
+  - Fold and add previews of folded section
+  - Should use with Konfekt/FastFold (to speed up folding)
+
 = Coc =
 
 - https://github.com/neoclide/coc-highlight - highlight current symbol
@@ -34,6 +40,12 @@ Conflicts with <CR> mappings
 = Python =
 
 - Refactoring - https://github.com/python-rope/ropevim
+- Syntax (esp for py3) - vim-python/python-syntax
+
+= Clipboard =
+
+- https://github.com/bfredl/nvim-miniyank
+  - Can use only put commands to fix visual block pasting - https://github.com/petobens/dotfiles/blob/master/vim/init.vim
 
 = Pair plugins =
 
@@ -164,6 +176,7 @@ Conflicts with <CR> mappings
 - https://github.com/petobens/dotfiles/blob/master/vim/init.vim
   - Lots of mac/win/linux
   - Caching and lazy loading
+  - Better usage of sessions
 
 = Finder Plugins =
 
@@ -187,3 +200,4 @@ options (with hotkey)
   - https://bitbucket.org/sjl/dotfiles/src/default/vim/vimrc
   - Clean up screen: nnoremap U :syntax sync fromstart<cr>:redraw!<cr>
 - Show keybindings - https://github.com/liuchengxu/vim-which-key
+- Highlight current yank - machakann/vim-highlightedyank
