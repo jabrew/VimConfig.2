@@ -24,6 +24,7 @@ endif
   " let Vundle manage Vundle, required
   Plugin 'gmarik/Vundle.vim'
 
+  " Newer: jiangmiao/auto-pairs
   Plugin 'vim-scripts/Auto-Pairs'
   Plugin 'kana/vim-arpeggio'
 

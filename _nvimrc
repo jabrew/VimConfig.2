@@ -9,7 +9,12 @@ let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
 " - Mac: ~/Library/Preferences/glrnvim.yml (mac)
 " - Linux: ~/.config/glrnvim.yml
 " - Should be symlinked, with real path ~/VimConfig
-"
+
+" Note: Config in:
+" - Mac/linux: ~/.config/nvim/init.vim
+" - Windows: ~/AppData/Local/nvim/init.vim
+"   - Use mklink C:\Users\Brew\AppData\Local\nvim\init.vim C:\Users\Brew\VimConfig\_nvimrc
+
 " Font options: https://github.com/powerline/fonts.git
 " Current font: Source Code Pro for Powerline : h15
 
@@ -22,6 +27,7 @@ set nocompatible
 "   - Chrome history
 "   - cd
 " - Fix braceless?
+" - Deleting comments in vimrc deletes extra lines - pair plugin causes
 
 " - hub - github
 "   - Fugitive plugin
@@ -53,7 +59,7 @@ let g:autocomplete_engine = 'ncm2'
 " Note: dein#load_state should be the if condition, but it doesn't seem to work
 " call dein#load_state('~/.nvim/dein/')
 " if 1
-if dein#load_state('/Users/jason.brewer/.nvim/dein')
+if dein#load_state(expand('~/.nvim/dein'))
   call dein#begin('~/.nvim/dein/')
 
   " Let dein manage dein
@@ -90,8 +96,9 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
   call dein#add('SirVer/ultisnips')
 
   " call dein#add('cohama/lexima.vim')
-  " call dein#add('tmsvg/pear-tree')
-  call dein#add('jiangmiao/auto-pairs')
+  call dein#add('tmsvg/pear-tree')
+  " call dein#add('vim-scripts/Auto-Pairs')
+  " call dein#add('jiangmiao/auto-pairs')
 
   " Alternative: AndrewRadev/splitjoin.vim - more popular, but doesn't seem to
   " indent quite correctly
@@ -105,7 +112,12 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
     call dein#add('Shougo/denite.nvim')
   elseif g:file_finder == 'fzf'
     " Installed via `brew install fzf`
-    call dein#add('/usr/local/opt/fzf')
+    if has('win32')
+      " If not working, may need to install fzf and fd
+      source C:/Programs/fzf/plugin/fzf.vim
+    else
+      call dein#add('/usr/local/opt/fzf')
+    endif
     call dein#add('junegunn/fzf.vim')
   else
     echoerr "Unknown file finder " . g:file_finder
@@ -243,6 +255,7 @@ if dein#load_state('/Users/jason.brewer/.nvim/dein')
   " ,P and ,S - easymotion for top level items
   call dein#add('tweekmonster/braceless.vim', {'on_ft': 'python'})
 
+  " Need to run :UpdateRemotePlugins
   call dein#add('numirias/semshi', {'on_ft': 'python'})
   " TODO: Consider tmhedberg/SimpylFold
   call dein#add('vim-python/python-syntax', {'on_ft' : 'python'})
@@ -400,6 +413,16 @@ syntax enable
   set titlestring=%t%(\ %M%)%(\ %h%)%(\ (%{expand(\"%:~:.:h\")})%)%(\ %a%)%(\ -\ %{g:window_name}%)
 " }
 
+" Per-os settings {
+  if has('win32')
+    " TODO: Consider putting these into ginit.vim instead
+    au VimEnter * GuiPopupmenu 0
+    au VimEnter * GuiTabline 0
+    au VimEnter * Guifont! Consolas NF:h14
+  else
+  endif
+" }
+
 " Keybindings {
   " Build keybinds
   let g:quickFixOpen = 0
@@ -484,12 +507,18 @@ syntax enable
     silent !hs -c "windowPosition('cur', 'right', 'bottom', 778, 786)"
     " self.proc_by_name('VimWiki'), 759, 809),
   else
-    " Lines 42, columns 117
-    nnoremap <silent> <Leader>wn :silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"<CR>
-    nnoremap <silent> <Leader>wl :silent !hs -c "windowPosition('cur', 'center', 'top', 1804, 976, 234)"<CR>
-    " silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"
-    " Note: equalalways seems to not quite equalize windows
-    silent !hs -c "windowPosition('cur', 'center', 'top', 0, 0, -139)"
+    if has('win32')
+      " Lines 42, columns 117
+      nnoremap <silent> <Leader>wn :silent !start C:\Users\Brew\Documents\Autohotkey\SizeWindow.ahk windowPosition cur center top 1186 963 -156<CR>
+      silent !start C:\Users\Brew\Documents\Autohotkey\SizeWindow.ahk windowPosition cur center top 1186 963 -156
+    else
+      " Lines 42, columns 117
+      nnoremap <silent> <Leader>wn :silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"<CR>
+      nnoremap <silent> <Leader>wl :silent !hs -c "windowPosition('cur', 'center', 'top', 1804, 976, 234)"<CR>
+      " silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"
+      " Note: equalalways seems to not quite equalize windows
+      silent !hs -c "windowPosition('cur', 'center', 'top', 0, 0, -139)"
+    endif
   endif
 
   " Notify hammerspoon the window is active
@@ -630,6 +659,15 @@ syntax enable
         \ if line("'\"") > 1 && line("'\"") <= line("$") |
         \ exe "normal! g`\"" |
         \ endif
+" }
+
+" Python
+  if has('win32')
+    let g:python3_host_prog = "c:/Programs/Python/Python37/python"
+  else
+    let g:python3_host_prog = "/usr/local/bin/python3"
+    " let g:python_host_prog = "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
+  endif
 " }
 
 " Not available in NeoVim
@@ -812,8 +850,6 @@ syntax enable
     "     \ <SID>check_back_space() ? "\<TAB>" :
     "     \ coc#refresh()
 
-    let g:python3_host_prog = "/usr/local/bin/python3"
-
     function! s:check_back_space() abort
       let col = col('.') - 1
       return !col || getline('.')[col - 1]  =~# '\s'
@@ -843,11 +879,14 @@ syntax enable
 " ncm2 {
   if g:autocomplete_engine == 'ncm2'
     " Ideally we'd use python 2 for jedi, but it seems to break ncm2
-    let g:python3_host_prog = "/usr/local/bin/python3"
-    let g:ncm2_jedi#python_version = 3
-    let g:ncm2_jedi#environment = '/usr/local/bin/python3'
+    if has('win32')
+      " let g:ncm2_jedi#environment = 'c:\Programs\Python\Python37\python'
+      " 'python' is python3 in current windows setup
+    else
+      let g:ncm2_jedi#environment = '/usr/local/bin/python3'
+      let g:ncm2_jedi#python_version = 3
+    endif
 
-    " let g:python_host_prog = "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
     " let g:ncm2_jedi#python_version = 2
     " let g:ncm2_jedi#environment = '/Library/Frameworks/Python.framework/Versions/2.7/bin/python'
 
@@ -892,7 +931,11 @@ syntax enable
 " }
 
 " jedi-vim {
-  let g:jedi#force_py_version = 3
+  " Currently windows setup only uses py3
+  if has('win32')
+  else
+    let g:jedi#force_py_version = 3
+  endif
 
   let g:jedi#auto_vim_configuration = 0
   let g:jedi#popup_on_dot = 0
@@ -967,18 +1010,19 @@ syntax enable
 "   let g:lexima_enable_endwise_rules = 1
 " " }
 
-" AutoPairs {
-  let g:AutoPairsCenterLine = 0
-  " imap <C-l> <End>;
-" }
+" " auto-pairs {
+"   let g:AutoPairsCenterLine = 0
+"   " imap <C-l> <End>;
+" " }
 
 " Does not work - try {'a':<CR>'b': 15} - mismatches quotes
-" " Likely due to conflict in <CR> binding
-" " pear-tree {
-"   let g:pear_tree_smart_openers = 1
-"   let g:pear_tree_smart_closers = 1
-"   let g:pear_tree_smart_backspace = 1
-" " }
+" (Note: Works in Windows 2019-08-13 - try linux)
+" Likely due to conflict in <CR> binding
+" pear-tree {
+  let g:pear_tree_smart_openers = 1
+  let g:pear_tree_smart_closers = 1
+  let g:pear_tree_smart_backspace = 1
+" }
 
 " NeoFormat {
   " Note: Includes several hacky changes to make Neoformat send the entire
