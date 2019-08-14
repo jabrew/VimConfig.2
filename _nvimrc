@@ -10,6 +10,11 @@ let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
 " - Linux: ~/.config/glrnvim.yml
 " - Should be symlinked, with real path ~/VimConfig
 
+" Note: Config in:
+" - Mac/linux: ~/.config/nvim/init.vim
+" - Windows: ~/AppData/Local/nvim/init.vim
+"   - Use mklink C:\Users\Brew\AppData\Local\nvim\init.vim C:\Users\Brew\VimConfig\_nvimrc
+
 " Font options: https://github.com/powerline/fonts.git
 " Current font: Source Code Pro for Powerline : h15
 
@@ -20,7 +25,7 @@ set nocompatible
 " - https://github.com/junegunn/fzf/wiki/examples
 "   - Chrome history
 "   - cd
-" - Deleting comments in vimrc deletes extra lines
+" - Deleting comments in vimrc deletes extra lines - pair plugin causes
 
 " - hub - github
 "   - Fugitive plugin
@@ -89,9 +94,9 @@ if dein#load_state(expand('~/.nvim/dein'))
   call dein#add('SirVer/ultisnips')
 
   " call dein#add('cohama/lexima.vim')
-  " call dein#add('tmsvg/pear-tree')
+  call dein#add('tmsvg/pear-tree')
   " call dein#add('vim-scripts/Auto-Pairs')
-  call dein#add('jiangmiao/auto-pairs')
+  " call dein#add('jiangmiao/auto-pairs')
 
   " Alternative: AndrewRadev/splitjoin.vim - more popular, but doesn't seem to
   " indent quite correctly
@@ -107,7 +112,7 @@ if dein#load_state(expand('~/.nvim/dein'))
     " Installed via `brew install fzf`
     if has('win32')
       " If not working, may need to install fzf and fd
-      source 'C:\Programs\fzf\plugin\fzf.vim'
+      source C:/Programs/fzf/plugin/fzf.vim
     else
       call dein#add('/usr/local/opt/fzf')
     endif
@@ -998,18 +1003,19 @@ syntax enable
 "   let g:lexima_enable_endwise_rules = 1
 " " }
 
-" AutoPairs {
-  let g:AutoPairsCenterLine = 0
-  " imap <C-l> <End>;
-" }
+" " auto-pairs {
+"   let g:AutoPairsCenterLine = 0
+"   " imap <C-l> <End>;
+" " }
 
 " Does not work - try {'a':<CR>'b': 15} - mismatches quotes
-" " Likely due to conflict in <CR> binding
-" " pear-tree {
-"   let g:pear_tree_smart_openers = 1
-"   let g:pear_tree_smart_closers = 1
-"   let g:pear_tree_smart_backspace = 1
-" " }
+" (Note: Works in Windows 2019-08-13 - try linux)
+" Likely due to conflict in <CR> binding
+" pear-tree {
+  let g:pear_tree_smart_openers = 1
+  let g:pear_tree_smart_closers = 1
+  let g:pear_tree_smart_backspace = 1
+" }
 
 " NeoFormat {
   " Note: Includes several hacky changes to make Neoformat send the entire
