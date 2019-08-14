@@ -16,10 +16,12 @@ let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
 set nocompatible
 
 " TODO:
+" - Session load/save broken (creates extra windows)
 " - Up arrow to lookback locally only - https://superuser.com/questions/446594/separate-up-arrow-lookback-for-local-and-global-zsh-history/691603
 " - https://github.com/junegunn/fzf/wiki/examples
 "   - Chrome history
 "   - cd
+" - Fix braceless?
 
 " - hub - github
 "   - Fugitive plugin
@@ -413,6 +415,11 @@ syntax enable
   nnoremap <F2> :cN<CR>
   nnoremap <F3> :cn<CR>
   nnoremap <F4> :silent exe "call ToggleQuickFix()"<CR>
+
+  " Select last pasted test
+  " From: https://vim.fandom.com/wiki/Selecting_your_pasted_text
+  " nnoremap gp `[v`]
+  nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
 
   " General keybinds
   if g:is_tabbed == 1
@@ -1001,7 +1008,11 @@ syntax enable
 " }
 
 " braceless {
-  autocmd FileType python BracelessEnable +indent +highlight
+  " TODO: Highlight is very slow on blocks with large strings (sql queries
+  " inside python files). Can likely fix the highlight cache or move a max
+  " amount of lines
+  " autocmd FileType python BracelessEnable +indent +highlight
+  autocmd FileType python BracelessEnable +indent
 " }
 
 " " hiPairs {
