@@ -21,8 +21,9 @@ let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
 set nocompatible
 
 " TODO:
-" - Debug: sm laptop call signatures in jedi are very slow - try
-"   https://github.com/Shougo/echodoc.vim ?
+" - Debug: macbook air - call signatures in jedi are very slow - try
+"   https://github.com/Shougo/echodoc.vim ? (Seems slightly ok after disabling
+"   braceless +highlight - needs further testing)
 " - Session load/save broken (creates extra windows)
 " - Up arrow to lookback locally only - https://superuser.com/questions/446594/separate-up-arrow-lookback-for-local-and-global-zsh-history/691603
 " - https://github.com/junegunn/fzf/wiki/examples
