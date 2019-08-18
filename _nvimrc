@@ -21,6 +21,9 @@ let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
 set nocompatible
 
 " TODO:
+" - Debug: macbook air - call signatures in jedi are very slow - try
+"   https://github.com/Shougo/echodoc.vim ? (Seems slightly ok after disabling
+"   braceless +highlight - needs further testing)
 " - Session load/save broken (creates extra windows)
 " - Up arrow to lookback locally only - https://superuser.com/questions/446594/separate-up-arrow-lookback-for-local-and-global-zsh-history/691603
 " - https://github.com/junegunn/fzf/wiki/examples
@@ -96,8 +99,8 @@ if dein#load_state(expand('~/.nvim/dein'))
 
   call dein#add('SirVer/ultisnips')
 
-  " call dein#add('cohama/lexima.vim')
-  call dein#add('tmsvg/pear-tree')
+  call dein#add('cohama/lexima.vim')
+  " call dein#add('tmsvg/pear-tree')
   " call dein#add('vim-scripts/Auto-Pairs')
   " call dein#add('jiangmiao/auto-pairs')
 
@@ -1005,25 +1008,37 @@ syntax enable
 
 " pear-tree seems slightly better, but doesnt work
 " This overwrites <CR> bindings (cancel autocomplete popup)
-" " lexima (auto-pair match) {
-"   let g:lexima_enable_basic_rules = 1
-"   let g:lexima_enable_newline_rules = 1
-"   let g:lexima_enable_endwise_rules = 1
-" " }
+" lexima (auto-pair match) {
+  let g:lexima_enable_basic_rules = 1
+  let g:lexima_enable_newline_rules = 1
+  let g:lexima_enable_endwise_rules = 1
+  let g:lexima_nvim_accept_pum_with_enter = 0
 
+  " au BufReadPost * inoremap <expr> <CR> (pumvisible() ? "\<c-y>\<cr>" : "\<CR>")
+" }
+
+" Annoying bug: Deleting a quote comment in _vimrc deletes extra lines
 " " auto-pairs {
 "   let g:AutoPairsCenterLine = 0
 "   " imap <C-l> <End>;
 " " }
 
-" Does not work - try {'a':<CR>'b': 15} - mismatches quotes
-" (Note: Works in Windows 2019-08-13 - somehow not mac)
-" Likely due to conflict in <CR> binding
-" pear-tree {
-  let g:pear_tree_smart_openers = 1
-  let g:pear_tree_smart_closers = 1
-  let g:pear_tree_smart_backspace = 1
-" }
+" " Does not work - try {'a':<CR>'b': 15} - mismatches quotes
+" " Maybe due to conflict in <CR> binding
+" " (Note: Works in Windows 2019-08-13 - not always mac)
+" " Also produces odd python errors opening json files
+" " Note: Disabling - too difficult to get CR to insert a newline when compltion
+" " open and also work with pear-tree
+" " pear-tree {
+"   let g:pear_tree_smart_openers = 1
+"   let g:pear_tree_smart_closers = 1
+"   let g:pear_tree_smart_backspace = 1
+
+"   " Breaks newline while preview window is open
+"   " imap <CR> <Plug>(PearTreeExpand)
+"   " TODO: Doesn't work - pear-tree binds its keys OnInsertEnter
+"   au BufReadPost * inoremap <expr> <CR> (pumvisible() ? "\<c-y>\<cr>" : "\<CR>")
+" " }
 
 " NeoFormat {
   " Note: Includes several hacky changes to make Neoformat send the entire
