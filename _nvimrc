@@ -26,8 +26,9 @@ set nocompatible
 " - https://github.com/junegunn/fzf/wiki/examples
 "   - Chrome history
 "   - cd
-" - Fix braceless?
-" - Deleting comments in vimrc deletes extra lines - pair plugin causes
+" - Fix braceless +highlight
+" - Fix pear-tree (extra quotes, fails on loading json file)
+" - Deleting comments in vimrc deletes extra lines - auto-pairs causes
 
 " - hub - github
 "   - Fugitive plugin
@@ -1016,7 +1017,7 @@ syntax enable
 " " }
 
 " Does not work - try {'a':<CR>'b': 15} - mismatches quotes
-" (Note: Works in Windows 2019-08-13 - try linux)
+" (Note: Works in Windows 2019-08-13 - somehow not mac)
 " Likely due to conflict in <CR> binding
 " pear-tree {
   let g:pear_tree_smart_openers = 1
