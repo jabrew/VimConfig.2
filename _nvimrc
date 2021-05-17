@@ -57,6 +57,8 @@ let g:file_finder = 'fzf'
 " ncm2 - works
 " coc - theoretically way stronger, fails simple cases - e.g. completions after
 " `gnv ~/test.py`
+" Note: Last updated coc 2019-12-12. Probably should use echodoc instead of jedi
+" if using coc
 let g:autocomplete_engine = 'ncm2'
 
 " Required:
@@ -518,7 +520,9 @@ syntax enable
     else
       " Lines 42, columns 117
       nnoremap <silent> <Leader>wn :silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"<CR>
-      nnoremap <silent> <Leader>wl :silent !hs -c "windowPosition('cur', 'center', 'top', 1804, 976, 234)"<CR>
+      " TODO: Doesn't seem to work consistently - maybe has to do with width of
+      " MBE window?
+      nnoremap <silent> <Leader>wl :silent !hs -c "windowPosition('cur', 'center', 'top', 1840, 976, 234)"<CR>
       " silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"
       " Note: equalalways seems to not quite equalize windows
       silent !hs -c "windowPosition('cur', 'center', 'top', 0, 0, -139)"
