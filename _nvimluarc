@@ -1,0 +1,4 @@
+Error
+" TODO: Remove this, and use lua directly (save a bit of startup time)
+set runtimepath+=~/VimConfig
+lua require('init')

@@ -2,6 +2,9 @@
 let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 set termguicolors
 
+" TODO - 2021-09 - Just before moving to lua?
+" - Get gutentags working
+
 " Custom cursor in terminal (note: may not work in tmux - see faq to fix)
 let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
 
@@ -45,7 +48,8 @@ set nocompatible
 " Dein installed with sh ./installer.sh ~/.nvim/dein
 
 " Required:
-set runtimepath+=~/.nvim/dein/repos/github.com/Shougo/dein.vim
+" set runtimepath+=~/.nvim/dein/repos/github.com/Shougo/dein.vim
+set runtimepath+=~/.cache/dein/repos/github.com/Shougo/dein.vim
 set runtimepath+=~/VimConfig
 
 " fzf, denite
@@ -64,13 +68,16 @@ let g:autocomplete_engine = 'ncm2'
 " Required:
 " Note: dein#load_state should be the if condition, but it doesn't seem to work
 " call dein#load_state('~/.nvim/dein/')
+" Note: When removing plugins, use call dein#recache_runtimepath() to refresh
 " if 1
-if dein#load_state(expand('~/.nvim/dein'))
-  call dein#begin('~/.nvim/dein/')
+" if dein#load_state(expand('~/.nvim/dein'))
+  " call dein#begin('~/.nvim/dein/')
+if dein#load_state(expand('~/.cache/dein'))
+  call dein#begin('~/.cache/dein/')
 
   " Let dein manage dein
   " Required:
-  call dein#add('~/.nvim/dein/repos/github.com/Shougo/dein.vim')
+  call dein#add('~/.cache/dein/repos/github.com/Shougo/dein.vim')
 
   " call dein#add('Shougo/deoplete.nvim')
   " call dein#add('zchee/deoplete-jedi')
@@ -120,7 +127,7 @@ if dein#load_state(expand('~/.nvim/dein'))
     " Installed via `brew install fzf`
     if has('win32')
       " If not working, may need to install fzf and fd
-      source C:/Programs/fzf/plugin/fzf.vim
+      " source C:/Programs/fzf/plugin/fzf.vim
     else
       call dein#add('/usr/local/opt/fzf')
     endif
@@ -169,7 +176,7 @@ if dein#load_state(expand('~/.nvim/dein'))
   " Alternative: lh-tags, easytags, watch script, git rebase hook
   " https://www.reddit.com/r/vim/comments/6ovppc/vimeasytags_alternative/
   " Note: Easytags is not maintained, but has tag highlighting
-  call dein#add('ludovicchabant/vim-gutentags')
+  " call dein#add('ludovicchabant/vim-gutentags')
 
   " call dein#add('kien/ctrlp.vim')
   " Alternative: undotree
@@ -322,7 +329,7 @@ if dein#load_state(expand('~/.nvim/dein'))
 
   " Required:
   call dein#end()
-  call dein#save_state()
+  " call dein#save_state()
 endif
 
 " inoremap <silent> <Plug>TestOpenParen ()<left><esc>:call repeat#set("\<Plug>TestOpenParen", v:count)<cr>a
@@ -515,8 +522,10 @@ syntax enable
   else
     if has('win32')
       " Lines 42, columns 117
-      nnoremap <silent> <Leader>wn :silent !start C:\Users\Brew\Documents\Autohotkey\SizeWindow.ahk windowPosition cur center top 1186 963 -156<CR>
-      silent !start C:\Users\Brew\Documents\Autohotkey\SizeWindow.ahk windowPosition cur center top 1186 963 -156
+      " nnoremap <silent> <Leader>wn :silent !start C:\Users\Brew\Documents\Autohotkey\SizeWindow.ahk windowPosition cur center top 1186 963 -156<CR>
+      " silent !start C:\Users\Brew\Documents\Autohotkey\SizeWindow.ahk windowPosition cur center top 1186 963 -156
+      nnoremap <silent> <Leader>wn :silent !start C:\Users\jason\dotfiles\windows\Autohotkey\SizeWindow.ahk windowPosition cur center top 1186 963 -156<CR>
+      silent !start C:\Users\jason\dotfiles\windows\Autohotkey\SizeWindow.ahk windowPosition cur center top 1186 963 -156
     else
       " Lines 42, columns 117
       nnoremap <silent> <Leader>wn :silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"<CR>
@@ -531,10 +540,12 @@ syntax enable
 
   " Notify hammerspoon the window is active
   " TODO: Consider also notifying hammerspoon on WinEnter
-  if v:vim_did_enter
-    silent !hs -c "notifyWindowActive()"
-  else
-    au VimEnter * silent !hs -c "notifyWindowActive()"
+  if has('win32')
+    if v:vim_did_enter
+      silent !hs -c "notifyWindowActive()"
+    else
+      au VimEnter * silent !hs -c "notifyWindowActive()"
+    endif
   endif
 " }
 
@@ -671,7 +682,8 @@ syntax enable
 
 " Python
   if has('win32')
-    let g:python3_host_prog = "c:/Programs/Python/Python37/python"
+    " let g:python3_host_prog = "c:/Programs/Python/Python37/python"
+    let g:python3_host_prog = "C:/Programs/miniconda3/envs/ml/python.exe"
   else
     let g:python3_host_prog = "/usr/local/bin/python3"
     " let g:python_host_prog = "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
@@ -1114,24 +1126,24 @@ syntax enable
   nnoremap <Space>gm :GitMessenger<CR>
 " }
 
-" gutentags {
-  " This doesn't run gutentags inside these types - but still runs it *for* all
-  " files in the project
-  " let g:gutentags_exclude_filetypes = ['javascript', 'cpp', 'c', 'java']
-  let g:gutentags_ctags_exclude = [
-        \ '*.c',
-        \ '*.cc',
-        \ '*.cpp',
-        \ '*.css',
-        \ '*.h',
-        \ '*.java',
-        \ '*.js',
-        \ '*.json',
-        \ '*.properties',
-        \ 'build',
-        \ 'Makefile',
-        \ ]
-" }
+" " gutentags {
+"   " This doesn't run gutentags inside these types - but still runs it *for* all
+"   " files in the project
+"   " let g:gutentags_exclude_filetypes = ['javascript', 'cpp', 'c', 'java']
+"   let g:gutentags_ctags_exclude = [
+"         \ '*.c',
+"         \ '*.cc',
+"         \ '*.cpp',
+"         \ '*.css',
+"         \ '*.h',
+"         \ '*.java',
+"         \ '*.js',
+"         \ '*.json',
+"         \ '*.properties',
+"         \ 'build',
+"         \ 'Makefile',
+"         \ ]
+" " }
 
 " vim-move {
   " <M-j>
