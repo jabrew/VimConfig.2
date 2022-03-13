@@ -22,6 +22,12 @@ class Blah(object):
     def __init__(self, other):
         print(f"Other: {other}")
         self._foo = other ** 2
+        if True:
+            print("1")
+        elif False:
+            print("2")
+        else:
+            print("3")
 
     def another(self, foo):
         self._foo += foo

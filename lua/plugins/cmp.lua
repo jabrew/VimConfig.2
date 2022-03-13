@@ -37,6 +37,9 @@ local on_attach = function(client, bufnr)
 end
 
 cmp.setup({
+  completion = {
+    completeopt = 'noinsert,menuone,noselect',
+  },
   snippet = {
     expand = function(args)
       -- For `vsnip` user.
@@ -54,7 +57,7 @@ cmp.setup({
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete(),
     ['<C-e>'] = cmp.mapping.close(),
-    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+    ['<CR>'] = cmp.mapping.confirm({ select = false }),
   },
   sources = {
     { name = 'nvim_lsp' },
@@ -71,7 +74,18 @@ cmp.setup({
     { name = 'buffer' },
 
     { name = 'nvim_lua' },
-  }
+  },
+  experimental = {
+    -- Without this, undo history breaks. Easiest repro to test:
+    -- Open python file
+    -- def example()
+    --   if True:
+    --     print("F")
+    --   else:
+    --     print("G")
+    -- <hit newline twice>
+    native_menu = true,
+  },
 })
 
 local servers = {
