@@ -1,0 +1,100 @@
+= OneDark =
+
+Can override colors like below
+
+    use {
+      'navarasu/onedark.nvim',
+      config = config.onedark,
+    }
+
+config.onedark  = function()
+  -- vim.cmd("colorscheme onedark")
+  color_util = require("color_util")
+  local default_brighten = 0.20
+
+  require('onedark').setup {
+    -- style = 'darker'
+    code_style = {
+        comments = 'none',
+        keywords = 'bold',
+        functions = 'none',
+        strings = 'none',
+        variables = 'none',
+    },
+    -- TODO: More subtly override this. More likely tokyonight is a more
+    -- principled base - lightens and darkens colors for specific highlights -
+    -- but default tokyonight is really low contrast
+    colors = {
+      black = "#181a1f",
+      -- Normal bg
+      bg0 = "#303030",
+      bg1 = color_util.brighten("#31353f", 0.1),
+      bg2 = color_util.brighten("#393f4a", 0.15),
+      bg3 = color_util.brighten("#3b3f4c", 0.15),
+      bg_d = color_util.brighten("#21252b", 0.15),
+      bg_blue = color_util.brighten("#73b8f1", default_brighten),
+      bg_yellow = color_util.brighten("#ebd09c", default_brighten),
+      fg = color_util.brighten("#abb2bf", default_brighten),
+      -- purple = color_util.brighten("#c678dd", 0.35),
+      -- purple = color_util.brighten("#c678dd", 0.5),
+      purple = color_util.brighten("#e86671", default_brighten),
+      green = color_util.brighten("#98c379", default_brighten),
+      orange = color_util.brighten("#d19a66", default_brighten),
+      blue = color_util.brighten("#61afef", default_brighten),
+      yellow = color_util.brighten("#e5c07b", default_brighten),
+      cyan = color_util.brighten("#56b6c2", default_brighten),
+      -- red = color_util.brighten("#e86671", default_brighten),
+      red = color_util.brighten("#c678dd", 0.5),
+      -- Comments
+      -- grey = color_util.brighten("#5c6370", 0.75),
+      grey = color_util.brighten("#5c8370", 0.65),
+      light_grey = color_util.brighten("#848b98", 0.75),
+      dark_cyan = color_util.brighten("#2b6f77", default_brighten),
+      dark_red = color_util.brighten("#c93939", default_brighten),
+      dark_yellow = color_util.brighten("#93691d", default_brighten),
+      dark_purple = color_util.brighten("#8a3fa0", 0.5),
+      diff_add = color_util.brighten("#31392b", default_brighten),
+      diff_delete = color_util.brighten("#382b2c", default_brighten),
+      diff_change = color_util.brighten("#1c3448", default_brighten),
+      diff_text = color_util.brighten("#2c5372", default_brighten),
+    },
+    -- Original colors
+    -- colors = {
+    --   black = "#181a1f",
+    --   bg0 = "#282c34",
+    --   bg1 = "#31353f",
+    --   bg2 = "#393f4a",
+    --   bg3 = "#3b3f4c",
+    --   bg_d = "#21252b",
+    --   bg_blue = "#73b8f1",
+    --   bg_yellow = "#ebd09c",
+    --   fg = "#abb2bf",
+    --   purple = "#c678dd",
+    --   green = "#98c379",
+    --   orange = "#d19a66",
+    --   blue = "#61afef",
+    --   yellow = "#e5c07b",
+    --   cyan = "#56b6c2",
+    --   red = "#e86671",
+    --   grey = "#5c6370",
+    --   light_grey = "#848b98",
+    --   dark_cyan = "#2b6f77",
+    --   dark_red = "#993939",
+    --   dark_yellow = "#93691d",
+    --   dark_purple = "#8a3fa0",
+    --   diff_add = "#31392b",
+    --   diff_delete = "#382b2c",
+    --   diff_change = "#1c3448",
+    --   diff_text = "#2c5372",
+    -- },
+  }
+  -- require('onedark').load()
+  -- vim.cmd("colorscheme onedark")
+  -- vim.cmd([[
+  -- " highlight LspReferenceText guibg=#FF0000 gui=NONE
+  -- " highlight LspReferenceWrite guibg=#554040 gui=NONE
+  -- " highlight LspReferenceRead guibg=#453030 gui=NONE
+  -- highlight LspReferenceWrite guibg=#B84304 gui=NONE
+  -- highlight LspReferenceRead guibg=#DE5810 gui=NONE
+  -- ]])
+end

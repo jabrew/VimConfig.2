@@ -1,3 +1,11 @@
+" Explanation:
+" - This works well, but needs patching - lots of new highlight groups with nvim
+"   and tree-sitter
+" 1. Older patch to use Tomorrow-Night-Eighties as default colors when desert
+"    has nothing
+" 2. Newer patch: use sainnhe/sonokai (load it first), then load this - removed
+"    the `syntax reset` to avoid stomping on colors
+
 " Vim color file
 " Maintainer:	Hans Fugal <hans@fugal.net>
 " Last Change:	$Date: 2003/07/24 00:57:11 $

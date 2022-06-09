@@ -1,3 +1,5 @@
+import torch
+
 # This is a longer comment, which spans multiple lines
 # Blah blah blah
 # And some more text - this should definitely be readable
@@ -11,6 +13,9 @@ def my_test_fn():
             print(f'i: {inner_var}')
             if True:
                 print('another')
+
+        foo = my_test_var + 9
+        print(f"{foo}, {my_test_var}")
     pass
 
 class Blah(object):
@@ -22,8 +27,9 @@ class Blah(object):
     def __init__(self, other):
         print(f"Other: {other}")
         self._foo = other ** 2
+        my_test_var = 312
         if True:
-            print("1")
+            print(f"1 {my_test_var}")
         elif False:
             print("2")
         else:
@@ -32,3 +38,5 @@ class Blah(object):
     def another(self, foo):
         self._foo += foo
         _bar = baz
+
+torch.nn.AvgPool2d()

@@ -1,3 +1,6 @@
+-- Debugging tips
+-- vim.inspect(val) will pretty print tables
+
 vim.o.runtimepath = vim.o.runtimepath .. ',~/VimConfig'
 
 vim.opt.autoindent = true
@@ -5,19 +8,12 @@ vim.opt.cursorline = true
 vim.o.termguicolors = true
 -- vim.g.my_test_var = '35a'
 
+-- Notes/to learn:
+-- - <C-G> and <C-O> while typing in search - preview match forward/backward
 -- TODO: Refactor? Maybe using vimpeccable to clean it up
 vim.cmd([[
 
-" TODO: Find a colorscheme
-colorscheme jbrewer_desert
-
 " Basics {
-  " let g:jellybeans_overrides = {
-  "       \     'background': { 'guibg': '2d2d2d' },
-  "       \ }
-  " colorscheme jellybeans
-  colorscheme jbrewer_desert
-
   set nocompatible
   set ruler
   set ignorecase
@@ -63,13 +59,6 @@ colorscheme jbrewer_desert
   " From http://ksjoberg.com/vim-esckeys.html , this should help the issue
   " where pushing esc takes a while to take effect
   " set noesckeys
-
-  " To set up vimwiki (MacVim):
-  " cd /Applications
-  " cp -r MacVim.app/ VimWiki.app/
-  " cd VimWiki.app/Contents/
-  " gvim Info.plist
-  " - Replace CFBundleName >MacVim< with >VimWiki<
 
   let g:mycwd = getcwd()
   if g:mycwd == expand('~/vimwiki') || g:mycwd == '~/vimwiki' || (!has('gui_running') && !has('nvim'))
@@ -124,8 +113,6 @@ colorscheme jbrewer_desert
     else
       " Lines 42, columns 117
       nnoremap <silent> <Leader>wn :silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"<CR>
-      " TODO: Doesn't seem to work consistently - maybe has to do with width of
-      " MBE window?
       nnoremap <silent> <Leader>wl :silent !hs -c "windowPosition('cur', 'center', 'top', 1840, 976, 234)"<CR>
       " silent !hs -c "windowPosition('cur', 'center', 'top', 1057, 824, -139)"
       " Note: equalalways seems to not quite equalize windows
@@ -298,7 +285,6 @@ colorscheme jbrewer_desert
     "au GUIEnter * simalt ~x
 
     " au TabEnter * source ~/VimConfig/TabEnter.vim
-    " TODO: If indenting doesn't work right, consider adding ts=2
     au FileType ruby,eruby,yaml setl ai sw=2 sts=2 et
     au FileType cpp set ai sw=2 sts=2 et
     au FileType python setl ai sw=4 sts=4 et
@@ -350,7 +336,45 @@ colorscheme jbrewer_desert
     set rulerformat=%30(%=\:b%n\ %y%m%r%w\ %l/%L,%c%V\ %P%)
 " }
 
-" TODO: Add "Search for visually selected text with *
+" Search for visually selected text with * # {
+  " http://vim.wikia.com/wiki/VimTip171
+  let s:save_cpo = &cpo | set cpo&vim
+  if !exists('g:VeryLiteral')
+    let g:VeryLiteral = 0
+  endif
+
+  function! s:VSetSearch(cmd)
+    let old_reg = getreg('"')
+    let old_regtype = getregtype('"')
+    normal! gvy
+    if @@ =~? '^[0-9a-z,_]*$' || @@ =~? '^[0-9a-z ,_]*$' && g:VeryLiteral
+      let @/ = @@
+    else
+      let pat = escape(@@, a:cmd.'\')
+      if g:VeryLiteral
+        let pat = substitute(pat, '\n', '\\n', 'g')
+      else
+        let pat = substitute(pat, '^\_s\+', '\\s\\+', '')
+        let pat = substitute(pat, '\_s\+$', '\\s\\*', '')
+        let pat = substitute(pat, '\_s\+', '\\_s\\+', 'g')
+      endif
+      let @/ = '\V'.pat
+    endif
+    normal! gV
+    call setreg('"', old_reg, old_regtype)
+  endfunction
+
+  vnoremap <silent> * :<C-U>call <SID>VSetSearch('/')<CR>/<C-R>/<CR>
+  vnoremap <silent> # :<C-U>call <SID>VSetSearch('?')<CR>?<C-R>/<CR>
+  vmap <kMultiply> *
+
+  " nmap <silent> <Plug>VLToggle :let g:VeryLiteral = !g:VeryLiteral
+  "   \\| echo "VeryLiteral " . (g:VeryLiteral ? "On" : "Off")<CR>
+  " if !hasmapto("<Plug>VLToggle")
+  "   nmap <unique> <Leader>vl <Plug>VLToggle
+  " endif
+  let &cpo = s:save_cpo | unlet s:save_cpo
+" }
 
 " Highlight anything past character 80 {
     let g:marginHighlighted = 0
@@ -380,13 +404,14 @@ local mappings = {}
 -- Note: Bindings should go in mappings, to support lazy loading. There are some
 -- exceptions - like arpeggio and cmp - that need to go in config
 
--- TODO: Move bindings into mappings
--- TODO: Take from NvChad instead of cmp
--- Note: nvim post 0.6.x supports nicer lua mappings and autocommands
 config.cmp = function()
+  -- TODO: Fix todos in this file
   require('plugins.cmp')
   vim.cmd([[
+    " Note: cmp overrides this one if we bind it. Will be necessary when we
+    " remap to cmp's builtin menu - but while using builting pum should be fine
     inoremap <expr> <CR> (pumvisible() ? "\<c-y>\<cr>" : "\<CR>")
+    inoremap <expr> <Tab> (pumvisible() ? "\<C-n>" : "\<Tab>")
   ]])
 end
 
@@ -394,8 +419,92 @@ config.coq = function()
   require('plugins.coq')
 end
 
+config.tokyonight  = function()
+  -- vim.cmd("colorscheme tokyonight")
+  vim.g.tokyonight_style = "storm"
+end
+
+config.kanagawa = function()
+  local override_colors = {
+    sumiInk0 = "#16161D",
+    -- Inactive window background
+    sumiInk1b= "#191921",
+    -- Main background
+    sumiInk1 = "#252525",
+    sumiInk2 = "#2A2A37",
+    sumiInk3 = "#363646",
+    sumiInk4 = "#54546D",
+
+    -- Comment
+    fujiGray = "#B2B1A9",
+    -- sumiInk0 = "#FF0000",
+    -- sumiInk1b = "#00FF00",
+    -- sumiInk1 = "#252525",
+    -- sumiInk2 = "#0000FF",
+    -- sumiInk3 = "#888888",
+    -- sumiInk4 = "#111111",
+  }
+  local override_groups = {}
+  require('kanagawa').setup({
+      undercurl = true,           -- enable undercurls
+      commentStyle = "NONE",
+      functionStyle = "NONE",
+      -- keywordStyle = "italic",
+      -- statementStyle = "bold",
+      -- typeStyle = "NONE",
+      -- variablebuiltinStyle = "italic",
+      specialReturn = true,       -- special highlight for the return keyword
+      specialException = true,    -- special highlight for exception handling keywords
+      transparent = false,        -- do not set background color
+      dimInactive = true,        -- dim inactive window `:h hl-NormalNC`
+      globalStatus = false,       -- adjust window separators highlight for laststatus=3
+      colors = override_colors,
+      overrides = override_groups,
+  })
+  vim.cmd("colorscheme kanagawa")
+end
+
+config.illuminate = function()
+  -- Colorscheme overrides this despite the highlight! - need to move to after
+  -- the 'colorscheme' command if needed. Currently (kanagawa), this isn't
+  -- needed
+  -- Note: Colorscheme seems to override. It's possible this is just onedark,
+  -- but for now, moved to just after the 'colorscheme' command
+  -- vim.cmd([[
+  -- " autocmd ColorScheme * highlight! link Hlargs TSParameter
+  -- autocmd ColorScheme * highlight! LspReferenceText guibg=#FF0000
+  -- autocmd ColorScheme * highlight! LspReferenceWrite guibg=#554040
+  -- autocmd ColorScheme * highlight! LspReferenceRead guibg=#453030
+  -- ]])
+
+  vim.api.nvim_set_keymap('n', '<a-n>', '<cmd>lua require"illuminate".next_reference{wrap=true}<cr>', {noremap=true})
+  vim.api.nvim_set_keymap('n', '<a-p>', '<cmd>lua require"illuminate".next_reference{reverse=true,wrap=true}<cr>', {noremap=true})
+end
+
 config.telescope = function()
   require('plugins.telescope')
+end
+
+mappings.telescope = function()
+  vim.keymap.set('n', '<Space>ff', function ()
+    -- In theory can do this by vim.fn.expand('%:h'), seems to fail
+    local path = require('plenary.path')
+    local root = tostring(path:new(vim.fn.expand('%')):parent())
+    return require('telescope.builtin').find_files({cwd = root})
+  end)
+  vim.cmd([[
+  " nnoremap <Space>ff <cmd>lua require('telescope.builtin').find_files({cwd = })<CR>
+  nnoremap <Space>fv :Telescope find_files<CR>
+  nnoremap <Space>fg :Telescope live_grep<CR>
+  nnoremap <Space>fh :Telescope help_tags<CR>
+  nnoremap <Space>fb :Telescope buffers<CR>
+
+  nnoremap <Space>js :Telescope lsp_document_symbols<CR>
+  nnoremap <Space>jr :Telescope lsp_references<CR>
+  nnoremap <Space>jd :Telescope lsp_document_diagnostics<CR>
+  ]])
+  -- TODO: Consider which-key - good example at
+  -- https://github.com/nuxshed/dotfiles/blob/main/config/nvim/lua/plugins/telescope.lua
 end
 
 config.arpeggio = function()
@@ -403,7 +512,7 @@ config.arpeggio = function()
   vim.fn['arpeggio#map']('c', '', 0, 'jk', '<C-c>')
   vim.fn['arpeggio#map']('v', '', 0, 'jk', '<Esc>')
   vim.fn['arpeggio#map']('o', '', 0, 'jk', '<Esc>')
-  -- TODO: Port the rest of these over
+  vim.fn['arpeggio#map']('s', '', 0, 'jk', '<Esc>')
 end
 
 config.blankline = function()
@@ -426,20 +535,39 @@ config.blankline = function()
 end
 
 config.treesitter = function()
-  require('nvim-treesitter.configs').setup {
-     ensure_installed = {
-        'lua',
-        'python',
-     },
-     highlight = {
-        enable = true,
-        use_languagetree = true,
-     },
-     -- Note: Part of matchup plugin
-     matchup = {
-       enable = true,
-     }
-  }
+  require('nvim-treesitter.configs').setup({
+    ensure_installed = {
+      'lua',
+      'python',
+    },
+    highlight = {
+      enable = true,
+      use_languagetree = true,
+    },
+    -- Note: Part of matchup plugin
+    matchup = {
+      enable = true,
+    },
+    -- TODO: Consider also other suggestions in comments of
+    -- https://www.reddit.com/r/neovim/comments/r10llx/the_most_amazing_builtin_feature_nobody_ever/
+    -- nvim-treehopper - hop.nvim for treesitter nodes
+    -- RRethy/nvim-treesitter-textsubjects - another option for incremental
+    -- selection
+    incremental_selection = {
+      enable = true,
+      keymaps = {
+        init_selection = '<CR>',
+        scope_incremental = '<CR>',
+        node_incremental = '<TAB>',
+        node_decremental = '<S-TAB>',
+      },
+    },
+  })
+end
+
+config.hlargs = function()
+  require('hlargs').setup()
+  vim.cmd [[autocmd ColorScheme * highlight! link Hlargs TSParameter]]
 end
 
 -- TODO: Clean
@@ -463,16 +591,49 @@ config.lsp_signature = function()
   }
 end
 
--- TODO: Mappings
+-- Notes:
+-- - Write snippets more easily with https://snippet-generator.app/
+-- - Find user snippets at
+-- https://code.visualstudio.com/docs/editor/userdefinedsnippets (marketplace)
 config.luasnip = function()
   local luasnip = require('luasnip')
+
+  -- Hack - this is what LuaSnip uses to find the friendly-snippets folder, so
+  -- we just copy the code
+  local function get_snippet_rtp()
+    return vim.tbl_map(function(itm)
+      return vim.fn.fnamemodify(itm, ":h")
+    end, vim.api.nvim_get_runtime_file("package.json", true))
+  end
 
   luasnip.config.set_config {
     history = true,
     updateevents = 'TextChanged,TextChangedI',
   }
-  -- TODO: Fix
-  -- require("luasnip/loaders/from_vscode").load { path = { chadrc_config.plugins.options.luasnip.snippet_path } }
+  local paths = get_snippet_rtp()
+  table.insert(paths, "~/VimConfig/snippets_luasnip")
+  require("luasnip.loaders.from_vscode").lazy_load({
+    paths = paths,
+  })
+
+  vim.cmd([[
+  snoremap <silent> <C-L> <cmd>lua require('luasnip').jump(1)<CR>
+  snoremap <silent> <C-H> <cmd>lua require('luasnip').jump(-1)<CR>
+  " inoremap <silent> <C-L> <cmd>lua require('luasnip').jump(1)<CR>
+  imap <silent><expr> <C-L> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<C-L>' 
+  inoremap <silent> <C-H> <cmd>lua require('luasnip').jump(-1)<CR>
+  ]])
+end
+
+mappings.trouble = function()
+  vim.cmd([[
+  nnoremap <Space>tt <cmd>TroubleToggle<CR>
+  nnoremap <Space>tw <cmd>TroubleToggle workspace_diagnostics<CR>
+  nnoremap <Space>tf <cmd>TroubleToggle document_diagnostics<CR>
+  " nnoremap <Space>tq <cmd>TroubleToggle quickfix<CR>
+  " nnoremap <Space>tl <cmd>TroubleToggle loclist<CR>
+  nnoremap <Space>tr <cmd>TroubleToggle lsp_references<CR>
+  ]])
 end
 
 config.trouble = function()
@@ -605,21 +766,30 @@ config.vista = function()
   ]])
 end
 
--- Note: Lexima handles repeat better, but this seems good enough - handles
--- single line repeats well, though multiline can get glitchy
+-- Note: Lexima handles repeat better - this handles single line repeats well,
+-- though multiline can get glitchy
+-- TODO: Consider using this instead - has much more power
 -- Note: There's an issue with <CR> with the preview menu up - repro:
 -- <text to trigger autocomplete><c-n><cr> - undo will break and add an extra
 -- line. Maybe autopairs, so try lexima
 -- Note: Above issue is probably braceless with <cr> mapped
+-- TODO: Get this to work with newline (e.g. {<cr>)
 config.autopairs = function()
-  require('nvim-autopairs').setup({
-    map_cr = false,
-  })
-  -- TODO: Confirm not needed - seems to have been deprecated/fixed
-  -- require('nvim-autopairs.completion.cmp').setup({
-  --   map_complete = true, -- insert () func completion
-  --   map_cr = true,
+  -- require('nvim-autopairs').setup({
+  --   map_cr = false,
   -- })
+  require('nvim-autopairs').setup()
+
+  -- Add `(` after using cmp
+  -- TODO: Figure out an elegant way to mix this with multiple completion
+  -- sources - cmp and coq
+  local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+  local cmp = require('cmp')
+  cmp.event:on(
+    'confirm_done',
+    cmp_autopairs.on_confirm_done({
+      map_char = { tex = '' }
+    }))
 end
 
 config.lexima = function()
@@ -631,28 +801,6 @@ end
 
 config.comment = function()
   require('Comment').setup()
-end
-
-mappings.lightspeed = function()
-  -- vim.cmd([[
-  --   silent! unmap s
-  --   silent! unmap S
-  -- ]])
-  --
-  -- vim.fn['arpeggio#map']('n', '', 0, 'we', '<Plug>Lightspeed_S')
-  -- vim.fn['arpeggio#map']('n', '', 0, 'cv', '<Plug>Lightspeed_s')
-end
-
-config.lightspeed = function()
-  -- TODO: For some reason this doesn't work - why?
-  -- mappings.lightspeed()
-  vim.cmd([[
-    silent! unmap s
-    silent! unmap S
-  ]])
-
-  vim.fn['arpeggio#map']('n', '', 0, 'we', '<Plug>(Lightspeed_S)')
-  vim.fn['arpeggio#map']('n', '', 0, 'cv', '<Plug>(Lightspeed_s)')
 end
 
 config.hop = function()
@@ -685,6 +833,7 @@ end
 --
 -- TODO: Consider developing a plugin to treat multiple small logical files as a
 -- single file - and then organizing this config
+-- Note: Plugins stored in ~\AppData\Local\nvim-data\site\pack\packer\start
 return require('packer').startup({
   function()
     -- Note: Ideally can simplify loading the configs by name, but doesn't work
@@ -705,7 +854,10 @@ return require('packer').startup({
 
     use 'nvim-lua/plenary.nvim'
 
-    -- TODO: Find a treesitter supported scheme -
+    -- For easier colorscheme configuration, try
+    -- https://github.com/norcalli/nvim-colorizer.lua
+
+    -- Treesitter supported schemes -
     -- https://github.com/rockerBOO/awesome-neovim#color
     -- Lots of plugin support - https://github.com/folke/tokyonight.nvim
     -- Aid to setting colors - https://github.com/rktjmp/lush.nvim
@@ -756,7 +908,8 @@ return require('packer').startup({
 
     -- Rejected:
     -- 'navarasu/onedark.nvim', -- Ok, neon slightly better
-    -- 'EdenEast/nightfox.nvim',
+    -- 'EdenEast/nightfox.nvim', -- Colors too light - intended for much darker
+    -- background
     -- 'novakne/kosmikoa.nvim', -- Colors ok, aggressive italics, bad bg
     -- 'Th3Whit3Wolf/space-nvim', -- Also lots of italics
     -- 'glepnir/zephyr-nvim',
@@ -766,11 +919,33 @@ return require('packer').startup({
     -- 'tomasiser/vim-code-dark', -- A little too dark, can probably adjust bg
     -- 'sainnhe/edge',  -- Not as good as sonokai
     -- 'ellisonleao/gruvbox.nvim', -- Ok potentially
+    -- 'ishan9299/nvim-solarized-lua', -- Even with overrides to colors, still
+    -- too low contrast
+
+    use {
+      'catppuccin/nvim',
+    }
+
+    use {
+      'norcalli/nvim-colorizer.lua',
+      cmd = 'ColorizerToggle',
+    }
+
+    use {
+      'folke/tokyonight.nvim',
+      config = config.tokyonight,
+    }
+
+    use {
+      'rebelot/kanagawa.nvim',
+      config = config.kanagawa,
+    }
 
     use {
       'nvim-telescope/telescope.nvim',
       cmd = 'Telescope',
       config = config.telescope,
+      setup = mappings.telescope,
       module = 'telescope',
       requires = {
         {'nvim-lua/plenary.nvim'},
@@ -820,6 +995,12 @@ return require('packer').startup({
       config = config.treesitter,
     }
 
+    use {
+      'm-demare/hlargs.nvim',
+      requires = { 'nvim-treesitter/nvim-treesitter' },
+      config = config.hlargs,
+    }
+
     -- TODO: Fix
     -- use {
     --   'lewis6991/gitsigns.nvim',
@@ -850,25 +1031,47 @@ return require('packer').startup({
       }
     elseif completionEngine == 'cmp' then
       use {
+        'rafamadriz/friendly-snippets',
+        -- event = 'InsertEnter',
+      }
+
+      -- Other options: https://github.com/rockerBOO/awesome-neovim#cursorline
+      use {
+        -- Note: Config is within lsp config
+        -- TODO: Add proper hooks to keep configs independent
+        'RRethy/vim-illuminate',
+        config = config.illuminate,
+      }
+
+      -- TODO: Consider other plugins
+      -- https://github.com/hrsh7th/nvim-cmp/wiki/List-of-sources - esp calc,
+      -- treesitter, lsp-signature-help - latter will require enabling native
+      -- menu
+      -- Consider also dadbod - will require custom bq extension though
+      -- TODO: Spelling correction - https://github.com/f3fora/cmp-spell and
+      -- underlines for misspellings
+      use {
         'hrsh7th/nvim-cmp',
-        -- Take native_menu out, once the bugs are fixed - breaks undo - see
-        -- cmp.lua for repro
         config = config.cmp,
-        -- TODO: Consume this config, rather than copy+paste here and in coq
-        -- config = override_req('nvim_cmp', 'plugins.configs.cmp'),
         requires = {
           {'hrsh7th/cmp-buffer'},
           {'hrsh7th/cmp-nvim-lsp'},
           {'hrsh7th/cmp-path'},
+          {'hrsh7th/cmp-nvim-lua', after = 'nvim-cmp'},
+          {'hrsh7th/cmp-cmdline', after = 'nvim-cmp'},
+          {'hrsh7th/cmp-nvim-lsp-document-symbol', after = 'nvim-cmp'},
+          {'max397574/cmp-greek'},
+          {'hrsh7th/cmp-nvim-lsp-signature-help'},
+          {'ray-x/cmp-treesitter'},
+          {'L3MON4D3/LuaSnip'},
         },
+        -- after = {'friendly-snippets'},
       }
 
-      -- Note: Useful, but disabled for now since it overlaps the autocomplete
-      -- popup. Potential fixes:
-      -- - Show in static window instead - requires a lot of code changes
-      -- - Use another completor - e.g. nvim-cmp or lspsaga have their own
-      --    floating windows and can manage this too, though cmp's floating
-      --    window has its own bugs - see comment there
+      -- TODO: Try again - previously overlapped with nvim-cmp popup, but that
+      -- may be fixed with native menu
+      -- Take config from the author -
+      -- https://github.com/ray-x/nvim/blob/master/lua/modules/completion/plugins.lua
       -- use {
       --   'ray-x/lsp_signature.nvim',
       --   after = {
@@ -881,17 +1084,17 @@ return require('packer').startup({
       --   },
       -- }
 
-      use {
-        'rafamadriz/friendly-snippets',
-        event = 'InsertEnter',
-      }
-
+      -- Other snippet plugins. Most popular as of 2022-04:
+      -- - https://github.com/SirVer/ultisnips
+      -- - https://github.com/hrsh7th/vim-vsnip - likely best integration with
+      -- cmp, but still vimscript
+      -- - https://github.com/norcalli/snippets.nvim
       use {
         'L3MON4D3/LuaSnip',
         wants = 'friendly-snippets',
-        after = {
-          'nvim-cmp',
-        },
+        -- after = {
+        --   'nvim-cmp',
+        -- },
         config = config.luasnip,
       }
 
@@ -917,29 +1120,32 @@ return require('packer').startup({
     use {
       'folke/trouble.nvim',
       requires = 'kyazdani42/nvim-web-devicons',
+      setup = mappings.trouble,
       config = config.trouble,
     }
 
-    -- TODO:
-    -- - Fix colors and icons in cmp/coq to show e.g. source
-    -- - Snippets plugin
-    -- - Fix pairs and braceless for quality editing
-
+    -- TODO: Doesn't let repeat with newlines work
     -- TODO: Use endwise functionality to auto-end language constructs
-    use {
-      'windwp/nvim-autopairs',
-      after = {
-        'nvim-cmp',
-      },
-      config = config.autopairs,
-    }
+    -- TODO: Adding newline inside a pair works poorly
+    -- TODO: Dig into their event attachment for cmp - can do any action after
+    -- accepting a completion
     -- use {
-    --   'cohama/lexima.vim',
+    --   'windwp/nvim-autopairs',
     --   after = {
-    --     -- 'nvim-cmp',
+    --     'nvim-cmp',
     --   },
-    --   config = config.lexima,
+    --   config = config.autopairs,
     -- }
+
+    -- TODO: Consider also ending html/xml -
+    -- https://www.reddit.com/r/neovim/comments/mylhuw/is_there_a_treesitter_based_autopairs_plugin/
+    -- - windwp/nvim-ts-autotag
+    -- TODO: Try tmsvg/pear-tree - may support dot-repeat even more effectively
+    -- Though relatively unmaintained
+    use {
+      'cohama/lexima.vim',
+      setup = config.lexima,
+    }
 
     use {
       'andymass/vim-matchup',
@@ -1077,10 +1283,9 @@ return require('packer').startup({
 
     -- Options:
     -- - easymotion/sneak - older and vim focused
-    -- - hop.nvim
     use {
       'phaazon/hop.nvim',
-      branch = 'v1',
+      -- branch = 'v1',
       config = config.hop(),
     }
     -- - lightspeed.nvim - seems most active, supports multi-window seek
@@ -1104,6 +1309,7 @@ return require('packer').startup({
     -- call dein#add('hynek/vim-python-pep8-indent', {'on_ft': 'python'})
     -- call dein#add('tpope/vim-ragtag')
     use 'tpope/vim-repeat'
+    -- TODO: Consider machakann/vim-sandwich
     use 'tpope/vim-surround'
     use 'tpope/vim-unimpaired'
 
@@ -1198,7 +1404,6 @@ return require('packer').startup({
     -- TODO: Plugins
     -- - https://github.com/ray-x/navigator.lua - Go to definition, references
     -- - https://github.com/RishabhRD/nvim-lsputils - Code actions, references
-    -- - https://github.com/folke/trouble.nvim - Lint, errors
     -- - https://github.com/jose-elias-alvarez/null-ls.nvim - Add external lint
     -- - kyazdani42/nvim-tree.lua or some other tree plugin (nvchad config)
     -- - lspkind - from nvim-cmp, better icons

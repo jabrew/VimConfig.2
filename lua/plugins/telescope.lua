@@ -7,6 +7,8 @@ if not present then
   return
 end
 
+-- Custom commands:
+-- https://github.com/nuxshed/dotfiles/blob/main/config/nvim/lua/plugins/telescope.lua - including some interesting options like fuzzy find in buffer, find symbols, etc
 telescope.setup {
    defaults = {
       vimgrep_arguments = {
@@ -34,9 +36,11 @@ telescope.setup {
          vertical = {
             mirror = false,
          },
-         width = 0.87,
-         height = 0.80,
-         preview_cutoff = 120,
+         -- width = 0.87,
+         -- height = 0.80,
+         width = 0.95,
+         height = 0.95,
+         preview_cutoff = 80,
       },
       file_sorter = require("telescope.sorters").get_fuzzy_file,
       file_ignore_patterns = { "node_modules" },
@@ -70,12 +74,6 @@ telescope.setup {
 }
 
 local extensions = { "themes", "terms", "fzf" }
-local packer_repos = [["extensions", "telescope-fzf-native.nvim"]]
-
--- if vim.fn.executable "ueberzug" == 1 then
---    table.insert(extensions, "media_files")
---    packer_repos = packer_repos .. ', "telescope-media-files.nvim"'
--- end
 
 pcall(function()
    for _, ext in ipairs(extensions) do
