@@ -294,7 +294,7 @@ vim.cmd([[
 
     "au Filetype html,xml,xsl source ~\vimfiles\bundle\closetag.vim
     "autocmd FileType ruby,eruby set omnifunc=rubycomplete#Complete
-    " Curretly disabled as it tends to lag out on big folders
+    " Currently disabled as it tends to lag out on big folders
     au FileType python set omnifunc=
 
     " Always show sign column
@@ -390,6 +390,14 @@ vim.cmd([[
         endif
     endfunction
     nmap <leader>m ;silent exe "call ToggleMarginHighlight()"<CR>
+" }
+
+" From https://www.reddit.com/r/neovim/comments/suy5j7/highlight_yanked_text/
+" Highlight yanked text {
+  augroup highlight_yank
+  autocmd!
+  au TextYankPost * silent! lua vim.highlight.on_yank({higroup="Visual", timeout=500})
+  augroup END
 " }
 
 if filereadable(expand("~/dotfiles_snap/_nvimrc"))
@@ -1036,12 +1044,16 @@ return require('packer').startup({
       }
 
       -- Other options: https://github.com/rockerBOO/awesome-neovim#cursorline
-      use {
-        -- Note: Config is within lsp config
-        -- TODO: Add proper hooks to keep configs independent
-        'RRethy/vim-illuminate',
-        config = config.illuminate,
-      }
+      -- Highlight current word
+      -- Note: Has config plus attach script in cmp
+      -- Note: Causes issues with really long args (see vim.cmd at the start of
+      -- this file)
+      -- use {
+      --   -- Note: Config is within lsp config
+      --   -- TODO: Add proper hooks to keep configs independent
+      --   'RRethy/vim-illuminate',
+      --   config = config.illuminate,
+      -- }
 
       -- TODO: Consider other plugins
       -- https://github.com/hrsh7th/nvim-cmp/wiki/List-of-sources - esp calc,

@@ -74,7 +74,7 @@ local on_attach = function(client, bufnr)
   buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
 
   -- Highlight current word
-  require('illuminate').on_attach(client)
+  -- require('illuminate').on_attach(client)
 end
 
 local has_words_before = function()
