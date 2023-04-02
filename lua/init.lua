@@ -1,5 +1,8 @@
 -- Debugging tips
 -- vim.inspect(val) will pretty print tables
+-- e.g. :lua print(vim.inspect(my_table))
+-- TODO: Sign column disappears in edit mode in lua/plugins/sidebar.lua but not
+-- here? Maybe try git add
 
 vim.o.runtimepath = vim.o.runtimepath .. ',~/VimConfig'
 
@@ -7,6 +10,10 @@ vim.opt.autoindent = true
 vim.opt.cursorline = true
 vim.o.termguicolors = true
 -- vim.g.my_test_var = '35a'
+--
+-- Next:
+-- - Sidebar/better buffers view
+-- - Make templates work - for full file and local code
 
 -- Notes/to learn:
 -- - <C-G> and <C-O> while typing in search - preview match forward/backward
@@ -38,7 +45,7 @@ vim.cmd([[
 
   set number
 
-  set wildmenu
+  " set wildmenu
   " Keep at least 5 lines above and below the cursor
   set scrolloff=5
   " May cause flashing on startup
@@ -150,8 +157,8 @@ vim.cmd([[
     nnoremap <Leader>p :bp<CR>
     nnoremap <Leader>n :bn<CR>
   else
-    nnoremap <silent> <C-P> :bp<CR>
-    nnoremap <silent> <C-N> :bn<CR>
+    " nnoremap <silent> <C-P> :bp<CR>
+    " nnoremap <silent> <C-N> :bn<CR>
     " nnoremap <silent> <C-P> :MBEbp<CR>
     " nnoremap <silent> <C-N> :MBEbn<CR>
     nnoremap <silent> <Leader>p :tabp<CR>
@@ -313,7 +320,7 @@ vim.cmd([[
 
 " Additional Filetypes {
   augroup filetypedetect
-    au BufRead,BufNewFile *.thrift         setfiletype thrift
+    au BufRead,BufNewFile *.thrift        setfiletype thrift
     au BufRead,BufNewFile *.proto         setfiletype proto
   augroup END
 " }
@@ -406,11 +413,36 @@ endif
 
 ]])
 
+local function map_key(mode, lhs, rhs, opts)
+  -- local options = { noremap=true, silent=true }
+  -- if opts then
+  --   options = vim.tbl_extend('force', options, opts)
+  -- end
+  -- vim.api.nvim_set_keymap(mode, lhs, rhs, options)
+  vim.api.nvim_set_keymap(mode, lhs, rhs, opts)
+end
+
 local config = {}
 local mappings = {}
 
 -- Note: Bindings should go in mappings, to support lazy loading. There are some
 -- exceptions - like arpeggio and cmp - that need to go in config
+
+config.mason = function()
+  require('mason').setup()
+end
+
+config.mason_lspconfig = function()
+  -- TODO: Consider pairing ruff_lsp with pyright for extra functionality
+  require('mason-lspconfig').setup({
+    -- TODO: Seems likely that this just makes sure we've manually installed
+    -- can do that via e.g. :MasonInstall lua_ls
+    ensure_installed = {
+      'lua_ls',
+      'pyright',
+    },
+  })
+end
 
 config.cmp = function()
   -- TODO: Fix todos in this file
@@ -472,6 +504,10 @@ config.kanagawa = function()
   vim.cmd("colorscheme kanagawa")
 end
 
+config.catppuccin = function()
+  vim.cmd('colorscheme catppuccin')
+end
+
 config.illuminate = function()
   -- Colorscheme overrides this despite the highlight! - need to move to after
   -- the 'colorscheme' command if needed. Currently (kanagawa), this isn't
@@ -509,7 +545,8 @@ mappings.telescope = function()
 
   nnoremap <Space>js :Telescope lsp_document_symbols<CR>
   nnoremap <Space>jr :Telescope lsp_references<CR>
-  nnoremap <Space>jd :Telescope lsp_document_diagnostics<CR>
+  " nnoremap <Space>jd :Telescope lsp_document_diagnostics<CR>
+  nnoremap <Space>jd :Telescope lsp_definitions<CR>
   ]])
   -- TODO: Consider which-key - good example at
   -- https://github.com/nuxshed/dotfiles/blob/main/config/nvim/lua/plugins/telescope.lua
@@ -649,6 +686,36 @@ config.trouble = function()
   })
 end
 
+mappings.sidebar = function()
+  vim.cmd([[
+  nnoremap <F4> <cmd>SidebarNvimToggle<CR>
+  ]])
+  -- Doesn't work - likely the function dissappears when mappings is processed
+  -- by packer
+  -- map_key('n', '<C-N>', "<cmd>lua require('plugins.sidebar').next_buf()<CR>", {})
+  -- map_key('n', '<C-P>', "<cmd>lua require('plugins.sidebar').prev_buf()<CR>", {})
+  vim.api.nvim_set_keymap('n', '<C-P>', "<cmd>lua require('plugins.sidebar').prev_buf()<CR>", {})
+  vim.api.nvim_set_keymap('n', '<C-N>', "<cmd>lua require('plugins.sidebar').next_buf()<CR>", {})
+  vim.api.nvim_set_keymap('n', '<leader>d', "<cmd>lua require('plugins.sidebar').delete_buf()<CR>", {})
+end
+
+config.sidebar = function()
+  require('plugins.sidebar')
+  -- local sidebar = require('plugins.sidebar')
+  -- Note: Trying to require sidebar in mappings breaks since it's too early
+end
+
+mappings.minibufexpl = function()
+  -- vim.cmd([[
+  --   let g:miniBufExplorerAutoStart = 0
+  --   if g:is_tabbed == 1
+  --     nnoremap <Leader>d :bd<CR>
+  --   else
+  --     nnoremap <Leader>d :MBEbd<CR>
+  --   endif
+  -- ]])
+end
+
 config.minibufexpl = function()
   vim.cmd([[
     if g:is_tabbed == 1
@@ -657,7 +724,8 @@ config.minibufexpl = function()
       let g:miniBufExplVSplit = 30   " Column width in chars
       let g:miniBufExplBRSplit = 0   " Split on left
 
-      let g:miniBufExplorerAutoStart = 1
+      " let g:miniBufExplorerAutoStart = 1
+      let g:miniBufExplorerAutoStart = 0
       let g:miniBufExplBuffersNeeded = 0
       let g:miniBufExplShowBufNumbers = 0
       let g:miniBufExplCycleArround = 1
@@ -666,6 +734,7 @@ config.minibufexpl = function()
 end
 
 mappings.autosession = function()
+  -- Note: Windows sessions in C:\Users\jason\AppData\Local\nvim-data\sessions
   vim.cmd([[
   nnoremap <Space>ss :SaveSession<CR>
   nnoremap <Space>sr :RestoreSession<CR>
@@ -689,16 +758,6 @@ mappings.packer = function()
 end
 -- TODO: Fix - see comment in packer config
 mappings.packer()
-
-mappings.minibufexpl = function()
-  vim.cmd([[
-    if g:is_tabbed == 1
-      nnoremap <Leader>d :bd<CR>
-    else
-      nnoremap <Leader>d :MBEbd<CR>
-    endif
-  ]])
-end
 
 config.argwrap = function()
   vim.g.argwrap_tail_comma_braces = '[{'
@@ -932,6 +991,8 @@ return require('packer').startup({
 
     use {
       'catppuccin/nvim',
+      as = 'catppuccin',
+      config = config.catppuccin,
     }
 
     use {
@@ -939,15 +1000,15 @@ return require('packer').startup({
       cmd = 'ColorizerToggle',
     }
 
-    use {
-      'folke/tokyonight.nvim',
-      config = config.tokyonight,
-    }
+    -- use {
+    --   'folke/tokyonight.nvim',
+    --   config = config.tokyonight,
+    -- }
 
-    use {
-      'rebelot/kanagawa.nvim',
-      config = config.kanagawa,
-    }
+    -- use {
+    --   'rebelot/kanagawa.nvim',
+    --   config = config.kanagawa,
+    -- }
 
     use {
       'nvim-telescope/telescope.nvim',
@@ -995,12 +1056,20 @@ return require('packer').startup({
     --   config = override_req('nvim_colorizer', '(plugins.configs.others).colorizer()'),
     -- }
 
+    -- use {
+    --   'nvim-treesitter/nvim-treesitter',
+    --   -- Treesitter recommends running this on startup, but seems too often
+    --   -- run = ':TSUpdate',
+    --   -- event = 'BufRead',
+    --   -- config = config.treesitter,
+    -- }
     use {
-      'nvim-treesitter/nvim-treesitter',
-      -- Treesitter recommends running this on startup, but seems too often
-      -- run = ':TSUpdate',
-      -- event = 'BufRead',
-      config = config.treesitter,
+        'nvim-treesitter/nvim-treesitter',
+        run = function()
+            local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
+            ts_update()
+        end,
+        config = config.treesitter,
     }
 
     use {
@@ -1019,11 +1088,28 @@ return require('packer').startup({
     -- }
 
     use {
+      'williamboman/mason.nvim',
+      -- run = ":MasonUpdate",
+      config = config.mason,
+    }
+
+    use {
+      'williamboman/mason-lspconfig.nvim',
+      requires = {
+        {'williamboman/mason.nvim'},
+      },
+      config = config.mason_lspconfig,
+    }
+
+    use {
       'neovim/nvim-lspconfig',
       -- TODO: Coq needs to override this for some reason?
       -- TODO: Same with cmp
       -- TODO: Find a cleaner way to handle this
       -- config = function() require('plugins.lspconfig') end,
+      requires = {
+        {'williamboman/mason-lspconfig.nvim'},
+      },
     }
 
     -- TODO: Decide
@@ -1134,6 +1220,12 @@ return require('packer').startup({
       requires = 'kyazdani42/nvim-web-devicons',
       setup = mappings.trouble,
       config = config.trouble,
+    }
+
+    use {
+      'sidebar-nvim/sidebar.nvim',
+      setup = mappings.sidebar,
+      config = config.sidebar,
     }
 
     -- TODO: Doesn't let repeat with newlines work
@@ -1297,7 +1389,7 @@ return require('packer').startup({
     -- - easymotion/sneak - older and vim focused
     use {
       'phaazon/hop.nvim',
-      -- branch = 'v1',
+      branch = 'v2',
       config = config.hop(),
     }
     -- - lightspeed.nvim - seems most active, supports multi-window seek
@@ -1339,7 +1431,7 @@ return require('packer').startup({
     -- call dein#add('junegunn/vim-peekaboo')
     -- TODO: gennaro-tedesco/nvim-peekup might be better modern alternative
 
-    -- TODO: Find alternative
+    -- TODO: Note: Disabled for now - use sidebar instead
     -- -- Show open buffers, vertically
     -- -- Other options: horizontal tagbar
     -- -- vim-buftabline, vem-tabline
@@ -1349,11 +1441,11 @@ return require('packer').startup({
     -- -- weynhamz is slightly newer
     -- -- call dein#add('fholgado/minibufexpl.vim')
     -- call dein#add('weynhamz/vim-plugin-minibufexpl')
-    use {
-      'weynhamz/vim-plugin-minibufexpl',
-      config = config.minibufexpl,
-      setup = mappings.minibufexpl,
-    }
+    -- use {
+    --   'weynhamz/vim-plugin-minibufexpl',
+    --   config = config.minibufexpl,
+    --   setup = mappings.minibufexpl,
+    -- }
 
     -- Command-mode keymaps
     use {

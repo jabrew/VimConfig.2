@@ -36,7 +36,15 @@ class Blah(object):
             print("3")
 
     def another(self, foo):
+        """A test docstring"""
         self._foo += foo
         _bar = baz
+
+def another(zee):
+    print('an')
+
+a = Blah(2)
+a.another()
+another(a)
 
 torch.nn.AvgPool2d()
