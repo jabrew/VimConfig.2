@@ -105,7 +105,7 @@ function get_buffers(options)
   if not buf_handles_changed(buf_handles) then
     -- Still need to mark active and do other work - just don't recompute the
     -- names or handles
-    local buffers = BufferInfo.buffers
+    buffers = BufferInfo.buffers
     for _, buffer in pairs(buffers) do
       buffer["active"] = buffer.handle == cur_buf_handle
     end
@@ -149,6 +149,10 @@ function get_buffer_string(options)
   return table.concat(parts, "\n")
 end
 
+function activate_buffer(index)
+  vim.api.nvim_set_current_buf(BufferInfo.buffers[index + 1].handle)
+end
+
 -- Create autocommands to update
 local autocmd = vim.api.nvim_create_autocmd
 autocmd('BufEnter', {
@@ -167,12 +171,12 @@ local buffers = {
   end,
   draw = function(ctx)
     return get_buffer_string({})
-      -- return "> string here\n> multiline"
   end,
-  -- highlights = {
-  --     groups = { MyHighlightGroup = { guifg="#C792EA", guibg="#00ff00" } },
-  --     links = { MyHighlightGroupLink = "Keyword" },
-  -- },
+  bindings = {
+    ['<CR>'] = function(line, col)
+      return activate_buffer(line)
+    end,
+  }
 }
 local opts = {
   open = true,

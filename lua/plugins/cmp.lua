@@ -5,10 +5,49 @@ local nvim_lsp = require('lspconfig')
 local M = {}
 
 M.on_list = function(options)
+  -- Weird note - on_list gets called even with one result, and gets called
+  -- before the cursor position changes. So we add the tag stack here instead of
+  -- in jump_to_tag - if we add it there we get a new entry even when the cursor
+  -- didn't move (note that cfirst changes the cursor position)
+  local from = { vim.fn.bufnr('%'), vim.fn.line('.'), vim.fn.col('.'), 0 }
+  local items = { { tagname = vim.fn.expand('<cword>'), from = from } }
+
+  vim.fn.settagstack(vim.fn.win_getid(), { items = items }, 't')
   vim.fn.setqflist({}, ' ', options)
   vim.api.nvim_command('cfirst')
   -- vim.fn.setloclist(0, {}, ' ', options)
   -- vim.api.nvim_command('lopen')
+end
+
+M.jump_to_tag = function()
+  vim.lsp.buf.definition({on_list=M.on_list})
+end
+
+local get_loc = function()
+  return { vim.fn.bufnr('%'), vim.fn.line('.'), vim.fn.col('.'), 0 }
+end
+
+local locs_equal = function(lhs, rhs)
+  assert(#lhs == 4)
+  assert(#rhs == 4)
+  return lhs[1] == rhs[1] and lhs[2] == rhs[2] and lhs[3] == rhs[3] and lhs[4] == rhs[4]
+end
+
+-- TODO: Consider instead lsp jump but use on_list to restrict results to
+-- current file
+M.jump_to_local_def = function()
+  local from = get_loc()
+  local items = { { tagname = vim.fn.expand('<cword>'), from = from } }
+
+  vim.cmd('normal! gd')
+
+  local new_loc = get_loc()
+  if locs_equal(from, new_loc) then
+    -- print("no move:" .. vim.inspect(from) .. " vs " .. vim.inspect(new_loc))
+  else
+    -- print("move:" .. vim.inspect(from) .. " vs " .. vim.inspect(new_loc))
+    vim.fn.settagstack(vim.fn.win_getid(), { items = items }, 't')
+  end
 end
 
 local kind_symbols = {
@@ -43,13 +82,13 @@ local kind_symbols = {
 local source_symbols = {
   buffer = " ﬘",
   nvim_lsp = " ",
-  luasnip = " 🐍",
+  -- TODO: Choose something subtler
+  -- luasnip = " 🐍",
   treesitter = " ",
   nvim_lua = " ",
   spell = " 暈",
 }
 
--- TODO: Move bindings into mappings
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
@@ -63,14 +102,18 @@ local on_attach = function(client, bufnr)
   local opts = { noremap=true, silent=true }
 
   -- See `:help vim.lsp.*` for documentation on any of the below functions
-  buf_set_keymap('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+
+  -- Note: At least python/lua don't do much with this, just copy C-] for nw
+  -- buf_set_keymap('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
   -- gd default is useful to go to the local definition. Also this tends to open
   -- up the location list
   -- buf_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
   -- buf_set_keymap('n', '<C-]>', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
-  -- Note: Still populates the list and still has duplicate entries in lua, but
-  -- at least doesn't open it
-  buf_set_keymap('n', '<C-]>', '<cmd>lua vim.lsp.buf.definition({on_list=require("plugins.cmp").on_list})<CR>', opts)
+  buf_set_keymap('n', 'gD', '<cmd>lua require("plugins.cmp").jump_to_tag()<CR>', opts)
+  buf_set_keymap('n', '<C-]>', '<cmd>lua require("plugins.cmp").jump_to_tag()<CR>', opts)
+  -- gd but add to tag stack
+  buf_set_keymap('n', 'gd', '<cmd>lua require("plugins.cmp").jump_to_local_def()<CR>', opts)
+  buf_set_keymap('n', '<space>jl', 'gd', opts)
   buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
   buf_set_keymap('n', 'gI', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
   buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
@@ -99,6 +142,25 @@ end
 
 local luasnip = require("luasnip")
 
+local menu_select_helper = function(direction, fallback, can_expand)
+  assert(direction == 1 or direction == -1)
+  if cmp.visible() then
+    if direction == 1 then
+      cmp.select_next_item()
+    else
+      cmp.select_prev_item()
+    end
+  elseif can_expand and luasnip.expand_or_jumpable() then
+    luasnip.expand_or_jump()
+  elseif luasnip.jumpable(direction) then
+    luasnip.jump(direction)
+  elseif has_words_before() then
+    cmp.complete()
+  else
+    fallback()
+  end
+end
+
 cmp.setup({
   completion = {
     completeopt = 'noinsert,menuone,noselect',
@@ -109,34 +171,27 @@ cmp.setup({
     end,
   },
   mapping = {
-    -- TODO: How to get docs?
     ['<C-d>'] = cmp.mapping.scroll_docs(-4),
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping(cmp.mapping.complete(), {'i', 'c'}),
     ['<C-e>'] = cmp.mapping.close(),
+
     -- ['<CR>'] = cmp.mapping.confirm({ select = false }),
+    ['<C-J>'] = cmp.mapping.confirm({ select = true }),
 
+    ["<C-N>"] = cmp.mapping(function(fallback)
+      return menu_select_helper(1, fallback, false)
+    end, { "i", "s", "c" }),
     ["<Tab>"] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      elseif luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
-      elseif has_words_before() then
-        cmp.complete()
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
+      return menu_select_helper(1, fallback, true)
+    end, { "i", "s", "c" }),
 
+    ["<C-P>"] = cmp.mapping(function(fallback)
+      return menu_select_helper(-1, fallback, false)
+    end, { "i", "s", "c" }),
     ["<S-Tab>"] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      elseif luasnip.jumpable(-1) then
-        luasnip.jump(-1)
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
+      return menu_select_helper(-1, fallback, false)
+    end, { "i", "s", "c" }),
   },
   formatting = {
     -- Taken from ray-x/navigator.lua
@@ -195,6 +250,16 @@ nvim_lsp.pyright.setup({
     debounce_text_changes = 150,
   },
   on_attach = on_attach,
+  settings = {
+    python = {
+      analysis = {
+        -- Without this it usually won't find project-local files
+        autoSearchPaths = true,
+        -- TODO: If this is really slow, try to disable
+        useLibraryCodeForTypes = true,
+      },
+    },
+  },
 })
 
 local runtime_path = vim.split(package.path, ';')

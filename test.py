@@ -47,4 +47,9 @@ a = Blah(2)
 a.another()
 another(a)
 
+"""
+Multiline string
+That spans lines
+"""
+
 torch.nn.AvgPool2d()

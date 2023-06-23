@@ -3,7 +3,6 @@
 -- e.g. :lua print(vim.inspect(my_table))
 -- TODO: Sign column disappears in edit mode in lua/plugins/sidebar.lua but not
 -- here? Maybe try git add
--- \C for case sensitive and \c for case insensitive regex
 
 vim.o.runtimepath = vim.o.runtimepath .. ',~/VimConfig'
 
@@ -94,14 +93,10 @@ vim.cmd([[
 " Note: Seems maybe this is the best way to handle autocmd for now. At least add a group and enable for only gui
 " Per-os settings {
   if has('win32')
-    au UIEnter * GuiPopupmenu 0
-    au UIEnter * GuiTabline 0
+    au VimEnter * GuiPopupmenu 0
+    au VimEnter * GuiTabline 0
     " Consider SourceCodePro
-    au UIEnter * Guifont! Consolas NF:h14
-    " au VimEnter * GuiPopupmenu 0
-    " au VimEnter * GuiTabline 0
-    " " Consider SourceCodePro
-    " au VimEnter * Guifont! Consolas NF:h14
+    au VimEnter * Guifont! Consolas NF:h14
   else
   endif
 
@@ -209,6 +204,7 @@ vim.cmd([[
 " Space keybindings {
   " Space bindings - should be very organized and easy to use, but harder to
   " type. Any very frequently used bindings should be moved to dedicated keys
+  " TODO: Use plugin to visualize/hint these
 
   " Clipboard (c)
   vnoremap <Space>cy "*y
@@ -239,6 +235,8 @@ vim.cmd([[
   " Note: Bindings for plugins in separate sections
 
   " TODO: Update below
+  " Jedi (j)
+  " Denite/fzf (f)
   " NeoFormat (=)
   " Git (git-messenger) (g)
   " pytest.vim (t)
@@ -424,25 +422,9 @@ local function map_key(mode, lhs, rhs, opts)
   vim.api.nvim_set_keymap(mode, lhs, rhs, opts)
 end
 
-CURRENT_TREESITTER_CONTEXT = function()
-  -- if not packer_plugins["nvim-treesitter"] or packer_plugins["nvim-treesitter"].loaded == false then
-  --   return " "
-  -- end
-  local f = require'nvim-treesitter'.statusline({
-    indicator_size = 300,
-    type_patterns = {"class", "function", "method", "interface", "type_spec", "table", "if_statement", "for_statement", "for_in_statement"}
-  })
-  local fun_name = string.format("%s", f) -- convert to string, it may be a empty ts node
-
-  -- print(string.find(fun_name, "vim.NIL"))
-  if fun_name == "vim.NIL" then
-    return " "
-  end
-  return " " .. fun_name
-end
-
 local config = {}
 local mappings = {}
+
 -- Note: Bindings should go in mappings, to support lazy loading. There are some
 -- exceptions - like arpeggio and cmp - that need to go in config
 
@@ -451,8 +433,7 @@ config.mason = function()
 end
 
 config.mason_lspconfig = function()
-  -- TODO: Consider pairing ruff_lsp with pyright for extra functionality in
-  -- python linting
+  -- TODO: Consider pairing ruff_lsp with pyright for extra functionality
   require('mason-lspconfig').setup({
     -- TODO: Seems likely that this just makes sure we've manually installed
     -- can do that via e.g. :MasonInstall lua_ls
@@ -524,57 +505,7 @@ config.kanagawa = function()
 end
 
 config.catppuccin = function()
-  -- Note: To get this:
-  -- :lua print(vim.inspect(require("catppuccin.palettes").get_palette("mocha")))
-  -- Output :messages to the buffer
-  -- :put = execute('messages')
-  local base_colors = {
-    base = "#1E1E2E",
-    blue = "#89B4FA",
-    crust = "#11111B",
-    flamingo = "#F2CDCD",
-    green = "#A6E3A1",
-    lavender = "#B4BEFE",
-    mantle = "#181825",
-    maroon = "#EBA0AC",
-    mauve = "#CBA6F7",
-    overlay0 = "#6C7086",
-    overlay1 = "#7F849C",
-    overlay2 = "#9399B2",
-    peach = "#FAB387",
-    pink = "#F5C2E7",
-    red = "#F38BA8",
-    rosewater = "#F5E0DC",
-    sapphire = "#74C7EC",
-    sky = "#89DCEB",
-    subtext0 = "#A6ADC8",
-    subtext1 = "#BAC2DE",
-    surface0 = "#313244",
-    surface1 = "#45475A",
-    surface2 = "#585B70",
-    teal = "#94E2D5",
-    text = "#CDD6F4",
-    yellow = "#F9E2AF"
-  }
-
-  require('catppuccin').setup({
-    dim_inactive = {
-      enabled = true,
-      percentage = 0.1,
-    },
-    -- TODO: Consider no italic
-    color_overrides = {
-      mocha = {
-        base = "#292929",
-      },
-    },
-    integrations = {
-      cmp = true,
-      illuminate = true,
-      telescope = true,
-    }
-  })
-  vim.cmd.colorscheme('catppuccin')
+  vim.cmd('colorscheme catppuccin')
 end
 
 config.illuminate = function()
@@ -590,11 +521,8 @@ config.illuminate = function()
   -- autocmd ColorScheme * highlight! LspReferenceRead guibg=#453030
   -- ]])
 
-  -- vim.api.nvim_set_keymap('n', '<a-n>', '<cmd>lua require("illuminate").next_reference{wrap=true}<cr>', {noremap=true})
-  -- vim.api.nvim_set_keymap('n', '<a-p>', '<cmd>lua require("illuminate").next_reference{reverse=true,wrap=true}<cr>', {noremap=true})
-  require('illuminate').configure({
-    min_count_to_highlight = 2,
-  })
+  vim.api.nvim_set_keymap('n', '<a-n>', '<cmd>lua require"illuminate".next_reference{wrap=true}<cr>', {noremap=true})
+  vim.api.nvim_set_keymap('n', '<a-p>', '<cmd>lua require"illuminate".next_reference{reverse=true,wrap=true}<cr>', {noremap=true})
 end
 
 config.telescope = function()
@@ -602,8 +530,6 @@ config.telescope = function()
 end
 
 mappings.telescope = function()
-  -- TODO: Consider more from e.g. LazyVim - live_grep from local folder, marks,
-  -- etc
   vim.keymap.set('n', '<Space>ff', function ()
     -- In theory can do this by vim.fn.expand('%:h'), seems to fail
     local path = require('plenary.path')
@@ -658,7 +584,6 @@ config.treesitter = function()
     ensure_installed = {
       'lua',
       'python',
-      'vim',
     },
     highlight = {
       enable = true,
@@ -690,51 +615,7 @@ config.hlargs = function()
   vim.cmd [[autocmd ColorScheme * highlight! link Hlargs TSParameter]]
 end
 
--- TODO: Consider also utilyre/barbecue.nvim - winbar version
--- Seems a bit smoother/heavier weight, but has nice pieces - can show even
--- below function level, uses winbar so more consistent
-config.treesitter_context = function()
-  require('treesitter-context').setup()
-end
-
-config.treesitter_textobjects = function()
-  require'nvim-treesitter.configs'.setup {
-    textobjects = {
-      select = {
-        enable = true,
-        lookahead = true,
-        keymaps = {
-          -- You can use the capture groups defined in textobjects.scm
-          ['af'] = { query = '@function.outer', desc = 'Select outer part of a function' },
-          ['if'] = { query = '@function.inner', desc = 'Select inner part of a function' },
-          ['ac'] = { query = '@class.outer', desc = 'Select outer part of a class' },
-          ['ic'] = { query = '@class.inner', desc = 'Select inner part of a class' },
-          ['aC'] = { query = '@comment.outer', desc = 'Select outer part of a comment' },
-          ['iC'] = { query = '@comment.inner', desc = 'Select inner part of a comment' },
-          ['a,'] = { query = '@parameter.outer', desc = 'Select outer part of a parameter' },
-          ['i,'] = { query = '@parameter.inner', desc = 'Select inner part of a parameter' },
-          -- You can also use captures from other query groups like `locals.scm`
-          -- ['as'] = { query = '@scope', query_group = 'locals', desc = 'Select language scope' },
-        },
-        selection_modes = {
-          ['@parameter.outer'] = 'v',
-          ['@function.outer'] = 'V',
-          ['@class.outer'] = 'V',
-        },
-      },
-      swap = {
-        enable = true,
-        swap_next = {
-          [',>'] = '@parameter.inner',
-        },
-        swap_previous = {
-          [',<'] = '@parameter.inner',
-        },
-      },
-    },
-  }
-end
-
+-- TODO: Clean
 config.lsp_signature = function()
   require('lsp_signature').setup {
     bind = true,
@@ -869,14 +750,14 @@ config.autosession = function()
   })
 end
 
--- mappings.packer = function()
---   vim.cmd([[
---     nnoremap <Space>pi :PackerInstall<CR>
---     nnoremap <Space>pc :PackerCompile<CR>
---     ]])
--- end
--- -- TODO: Fix - see comment in packer config
--- mappings.packer()
+mappings.packer = function()
+  vim.cmd([[
+    nnoremap <Space>pi :PackerInstall<CR>
+    nnoremap <Space>pc :PackerCompile<CR>
+    ]])
+end
+-- TODO: Fix - see comment in packer config
+mappings.packer()
 
 config.argwrap = function()
   vim.g.argwrap_tail_comma_braces = '[{'
@@ -952,8 +833,6 @@ config.vista = function()
   ]])
 end
 
--- 2023-05 - This issue may be fixed, but seems still a bit worse at e.g. adding
--- curly brace then newline (wrong indent). Should be fixable with config
 -- Note: Lexima handles repeat better - this handles single line repeats well,
 -- though multiline can get glitchy
 -- TODO: Consider using this instead - has much more power
@@ -999,598 +878,659 @@ config.hop = function()
   vim.fn['arpeggio#map']('v', '', 0, 'we', '<cmd>HopChar2<CR>')
 end
 
--- Todo: Intersperse config and plugins
--- Config for lazy.nvim plugins
-local plugins = {}
--- TODO: How to manage/update lazy itself?
+-- -- Install packer if it isn't present
+-- local present, packer = pcall(require, "packer")
+-- if not present then
+--   local fn = vim.fn
+--   local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
+--   print("Packer not found - installing '" .. install_path .. "'")
+--   if fn.empty(fn.glob(install_path)) > 0 then
+--     fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+--     vim.cmd 'packadd packer.nvim'
+--   end
+-- end
 
-local add_plugin = function(spec)
-  table.insert(plugins, spec)
-end
-
-add_plugin {'nvim-lua/plenary.nvim'}
-
--- For easier colorscheme configuration, try
--- https://github.com/norcalli/nvim-colorizer.lua
-
--- Treesitter supported schemes -
--- https://github.com/rockerBOO/awesome-neovim#color
--- Lots of plugin support - https://github.com/folke/tokyonight.nvim
--- Aid to setting colors - https://github.com/rktjmp/lush.nvim
--- Tried colorschemes
---   'arcticicestudio/nord-vim',
---   'rafamadriz/neon',
---   'metalelf0/jellybeans-nvim',
---   'RRethy/nvim-base16',
---   'mhartington/oceanic-next',
---   'sainnhe/edge',
---   -- Not bad, tinted bg, hard to tell print vs self._bar colors
---   'sainnhe/sonokai',
---   'tomasiser/vim-code-dark',
---   'projekt0n/github-nvim-theme',
-
--- Rejected colorschemes:
--- 'navarasu/onedark.nvim', -- Ok, neon slightly better
--- 'EdenEast/nightfox.nvim', -- Colors too light - intended for much darker
--- background
--- 'novakne/kosmikoa.nvim', -- Colors ok, aggressive italics, bad bg
--- 'Th3Whit3Wolf/space-nvim', -- Also lots of italics
--- 'glepnir/zephyr-nvim',
--- 'Th3Whit3Wolf/one-nvim', -- Need to fix background, maybe worthwhile?
--- 'mhartington/oceanic-next', -- Need to fix background, maybe worthwhile?
--- 'Th3Whit3Wolf/onebuddy',
--- 'tomasiser/vim-code-dark', -- A little too dark, can probably adjust bg
--- 'sainnhe/edge',  -- Not as good as sonokai
--- 'ellisonleao/gruvbox.nvim', -- Ok potentially
--- 'ishan9299/nvim-solarized-lua', -- Even with overrides to colors, still
--- too low contrast
-
-add_plugin {
-  'catppuccin/nvim',
-  name = 'catppuccin',
-  config = config.catppuccin,
-  lazy = false,
-  priority = 1000,
-}
-
-add_plugin {
-  'norcalli/nvim-colorizer.lua',
-  cmd = 'ColorizerToggle',
-}
-
--- add_plugin {
---   'folke/tokyonight.nvim',
---   config = config.tokyonight,
--- }
-
--- add_plugin {
---   'rebelot/kanagawa.nvim',
---   config = config.kanagawa,
--- }
-
-add_plugin {
-  'nvim-telescope/telescope.nvim',
-  cmd = 'Telescope',
-  config = config.telescope,
-  init = mappings.telescope,
-  module = 'telescope',
-  dependencies = {
-    {'nvim-lua/plenary.nvim'},
-    {
-      'nvim-telescope/telescope-fzf-native.nvim',
-      build = 'make',
-    },
-  },
-}
-
--- Note: For just esc, can use
--- https://github.com/max397574/better-escape.nvim
-add_plugin {
-  'kana/vim-arpeggio',
-  config = config.arpeggio,
-  lazy = false,
-  -- Other dependencies use this to map keys. Packer does two pass, but lazy
-  -- does one pass, so need to ensure this is first
-  priority = 1000,
-}
-
-add_plugin 'kyazdani42/nvim-web-devicons'
-
--- TODO: Take config from NvChad
--- TODO: Font
--- add_plugin {
---   'famiu/feline.nvim',
---   config = override_req('feline', 'plugins.configs.statusline'),
--- }
-
--- TODO: Fix - control color, make vertical spacing work - probably the font
-add_plugin {
-  'lukas-reineke/indent-blankline.nvim',
-  -- TODO: Debug - doesn't work with this
-  -- event = 'BufRead',
-  config = config.blankline,
-}
-
--- TODO: Only on command
--- add_plugin {
---   'norcalli/nvim-colorizer.lua',
---   event = 'BufRead',
---   config = override_req('nvim_colorizer', '(plugins.configs.others).colorizer()'),
--- }
-
-add_plugin {
-    'nvim-treesitter/nvim-treesitter',
-    run = function()
-        local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
-        ts_update()
-    end,
-    config = config.treesitter,
-}
-
-add_plugin {
-  'm-demare/hlargs.nvim',
-  dependencies = { 'nvim-treesitter/nvim-treesitter' },
-  config = config.hlargs,
-}
-
-add_plugin {
-  'nvim-treesitter/nvim-treesitter-context',
-  dependencies = { 'nvim-treesitter/nvim-treesitter' },
-  config = config.treesitter_context,
-}
-
-add_plugin {
-  'nvim-treesitter/nvim-treesitter-textobjects',
-  dependencies = { 'nvim-treesitter' },
-  config = config.treesitter_textobjects,
-}
-
--- TODO: Fix
--- add_plugin {
---   'lewis6991/gitsigns.nvim',
---   config = override_req('gitsigns', 'plugins.configs.gitsigns'),
---   init = function()
---     require('core.utils').packer_lazy_load 'gitsigns.nvim'
---   end,
--- }
-
-add_plugin {
-  'williamboman/mason.nvim',
-  -- run = ":MasonUpdate",
-  config = config.mason,
-}
-
-add_plugin {
-  'williamboman/mason-lspconfig.nvim',
-  dependencies = {
-    {'williamboman/mason.nvim'},
-  },
-  config = config.mason_lspconfig,
-}
-
-add_plugin {
-  'neovim/nvim-lspconfig',
-  -- TODO: Coq needs to override this for some reason?
-  -- TODO: Same with cmp
-  -- TODO: Find a cleaner way to handle this
-  -- config = function() require('plugins.lspconfig') end,
-  dependencies = {
-    {'williamboman/mason-lspconfig.nvim'},
-  },
-}
-
--- TODO: Decide
-local completionEngine = 'cmp'
-if completionEngine == 'coq' then
-  add_plugin {
-    'ms-jpq/coq_nvim',
-    branch = 'coq',
-    config = config.coq,
-    dependencies = {
-      {'neovim/nvim-lspconfig'},
-    },
-  }
-elseif completionEngine == 'cmp' then
-  add_plugin {
-    'rafamadriz/friendly-snippets',
-    -- event = 'InsertEnter',
-  }
-
-  -- Other options: https://github.com/rockerBOO/awesome-neovim#cursorline
-  -- Highlight current word
-  -- Note: Has config plus attach script in cmp
-  -- Note: Causes issues with really long args (see vim.cmd at the start of
-  -- this file)
-  add_plugin {
-    -- Note: Config is within lsp config
-    -- TODO: Add proper hooks to keep configs independent
-    'RRethy/vim-illuminate',
-    config = config.illuminate,
-  }
-
-  -- TODO: Consider other plugins
-  -- https://github.com/hrsh7th/nvim-cmp/wiki/List-of-sources - esp calc,
-  -- treesitter, lsp-signature-help - latter will require enabling native
-  -- menu
-  -- Consider also dadbod - will require custom bq extension though
-  -- TODO: Spelling correction - https://github.com/f3fora/cmp-spell and
-  -- underlines for misspellings
-  add_plugin {
-    'hrsh7th/nvim-cmp',
-    config = config.cmp,
-    dependencies = {
-      {'hrsh7th/cmp-buffer'},
-      {'hrsh7th/cmp-nvim-lsp'},
-      {'hrsh7th/cmp-path'},
-      {'hrsh7th/cmp-nvim-lua'},
-      {'hrsh7th/cmp-cmdline'},
-      {'hrsh7th/cmp-nvim-lsp-document-symbol'},
-      {'max397574/cmp-greek'},
-      {'hrsh7th/cmp-nvim-lsp-signature-help'},
-      {'ray-x/cmp-treesitter'},
-      {'L3MON4D3/LuaSnip'},
-    },
-  }
-
-  -- TODO: Try again - previously overlapped with nvim-cmp popup, but that
-  -- may be fixed with native menu
-  -- Take config from the author -
-  -- https://github.com/ray-x/nvim/blob/master/lua/modules/completion/plugins.lua
-  -- add_plugin {
-  --   'ray-x/lsp_signature.nvim',
-  --   dependencies = {
-  --     'nvim-cmp',
-  --     'nvim-lspconfig',
-  --   },
-  --   config = config.lsp_signature,
-  --   dependencies = {
-  --     {'neovim/nvim-lspconfig'},
-  --   },
-  -- }
-
-  -- Other snippet plugins. Most popular as of 2022-04:
-  -- - https://github.com/SirVer/ultisnips
-  -- - https://github.com/hrsh7th/vim-vsnip - likely best integration with
-  -- cmp, but still vimscript
-  -- - https://github.com/norcalli/snippets.nvim
-  add_plugin {
-    'L3MON4D3/LuaSnip',
-    dependencies = {
-      'friendly-snippets',
-    },
-    -- dependencies = {
-    --   'nvim-cmp',
-    -- },
-    config = config.luasnip,
-  }
-
-  add_plugin {
-    'saadparwaiz1/cmp_luasnip',
-    dependencies = {
-      'LuaSnip',
-      'nvim-cmp',
-    },
-  }
-
-  add_plugin {
-    'hrsh7th/cmp-nvim-lua',
-    dependencies = {
-      'LuaSnip',
-      'nvim-cmp',
-    },
-  }
-else
-  error('Invalid completion engine ' .. completionEngine)
-end
-
-add_plugin {
-  'folke/trouble.nvim',
-  dependencies = 'kyazdani42/nvim-web-devicons',
-  init = mappings.trouble,
-  config = config.trouble,
-}
-
-add_plugin {
-  'sidebar-nvim/sidebar.nvim',
-  init = mappings.sidebar,
-  config = config.sidebar,
-}
-
--- TODO: Doesn't let repeat with newlines work
--- TODO: Use endwise functionality to auto-end language constructs
--- TODO: Adding newline inside a pair works poorly
--- TODO: Dig into their event attachment for cmp - can do any action after
--- accepting a completion
--- add_plugin {
---   'windwp/nvim-autopairs',
---   dependencies = {
---     'nvim-cmp',
---   },
---   config = config.autopairs,
--- }
-
--- TODO: Consider also ending html/xml -
--- https://www.reddit.com/r/neovim/comments/mylhuw/is_there_a_treesitter_based_autopairs_plugin/
--- - windwp/nvim-ts-autotag
--- TODO: Try tmsvg/pear-tree - may support dot-repeat even more effectively
--- Though relatively unmaintained
-add_plugin {
-  'cohama/lexima.vim',
-  init = config.lexima,
-}
-
-add_plugin {
-  'andymass/vim-matchup',
-  -- Note: Configured in treesitter - need to edit that config instead
-}
-
--- Nice for per-language mappings, but can't get it to stop adding a space
--- after comment lines
--- tpope/vim-commentary doesn't have the option either
--- add_plugin {
---   'terrortylor/nvim-comment',
---   -- cmd = {'CommentToggle', 'CommentOperator'},
---   config = config.comment,
---   init = mappings.comment,
---   event = 'BufRead',
--- }
--- TODO: Learn some of the extra mappings
-add_plugin {
-  'numToStr/Comment.nvim',
-  config = config.comment,
-}
-
--- ----------Taken directly from old _nvimrc
-
--- Alternative: AndrewRadev/splitjoin.vim - more popular, but doesn't seem to
--- indent quite correctly
-add_plugin {
-  'FooSoft/vim-argwrap',
-  cmd = 'ArgWrap',
-  config = config.argwrap,
-  init = mappings.argwrap,
-}
-
--- -- TODO: Needed? LSP may do format
--- -- TODO: Replace?
--- -- call dein#add('sbdchd/neoformat')
+-- TODO: Packer is only supposed to be init'ed when updating packages? Though
+-- may be simpler to keep as-is
+-- TODO: Consider NvChad packer init - cleaner download boxes and setup
+-- Note: Must be at end of file. Rather than trying to e.g. try to put things in
+-- separate tiny files, its far easier to just place everything above,
+-- especially for e.g. mappings. Larger configs without mappings may be moved
+-- into plugins
 --
--- -- TODO: Find treesitter/lua replacements
--- -- Text objects
--- -- e.g. vaf, vac (rebound below to vaC, conflicts with tcomment select comment)
--- add_plugin {
---   'bps/vim-textobj-python',
---   config = config.textobj_python,
---   ft = {
---     'python',
---   },
---   dependencies = {
---     {'kana/vim-textobj-user'},
---   }
--- }
--- -- Alternative: https://github.com/vim-scripts/argtextobj.vim
--- -- Older: call dein#add('vim-scripts/Parameter-Text-Objects')
--- -- e.g. vi, - select parameter
--- add_plugin {
---   'sgur/vim-textobj-parameter',
---   dependencies = {
---     {'kana/vim-textobj-user'},
---   }
--- }
--- -- e.g. vie - ie trims whitespace, ae selects entire
--- add_plugin {
---   'kana/vim-textobj-entire',
---   dependencies = {
---     {'kana/vim-textobj-user'},
---   }
--- }
--- -- e.g. viv - camelCase or under_score part
--- add_plugin {
---   'Julian/vim-textobj-variable-segment',
---   dependencies = {
---     {'kana/vim-textobj-user'},
---   }
--- }
--- -- e.g. vam - method, vaM - method chain
--- add_plugin {
---   'thalesmello/vim-textobj-methodcall',
---   dependencies = {
---     {'kana/vim-textobj-user'},
---   }
--- }
--- TODO: Keep or remove below - add bindings as well
--- -- e.g. A-k to move a line down - hjkl movements
--- call dein#add('matze/vim-move')
+-- TODO: Consider developing a plugin to treat multiple small logical files as a
+-- single file - and then organizing this config
+-- Note: Plugins stored in ~\AppData\Local\nvim-data\site\pack\packer\start
+return require('packer').startup({
+  function()
+    -- Note: Ideally can simplify loading the configs by name, but doesn't work
+    -- since packer has issues with some upvalues - see
+    -- https://githubmemory.com/repo/wbthomason/packer.nvim/issues/351
+    -- TODO: Get this working for both config and mappings
+    -- local config_plugin = function(name)
+    --   local saved_name = name
+    --   return function()
+    --     require('plugins.' .. saved_name)
+    --   end
+    -- end
 
--- TODO: Keep or remove below
--- Lots of text objects - learn or replace with vim-textobj-*
--- call dein#add('wellle/targets.vim')
--- * Has config
--- call dein#add('bkad/CamelCaseMotion')
+    -- Packer can manage itself
+    -- TODO: Add setup/mappings here. Instead we add them globally because
+    -- otherwise packer keeps trying to remove itself on any config change
+    use 'wbthomason/packer.nvim'
 
--- Works ok, but requires python2
--- call dein#add('vim-scripts/swap-parameters')
--- Way better than swap-parameters, but bindings conflict with tcomment (net:
--- get rid of tcomment)
--- g<, g> to move param, gs to enter swap mode
-add_plugin 'machakann/vim-swap'
+    use 'nvim-lua/plenary.nvim'
 
--- Alternative: airblade/vim-gitgutter
--- e.g. [c, ]c, [C, ]C - jump to chunk
--- e.g. vig - select git chunk (mapped below)
-add_plugin {
-  'mhinz/vim-signify',
-  init = mappings.signify,
-  config = config.signify,
-}
-add_plugin 'tpope/vim-fugitive'
+    -- For easier colorscheme configuration, try
+    -- https://github.com/norcalli/nvim-colorizer.lua
 
-add_plugin {
-  'rhysd/git-messenger.vim',
-  init = config.git_messenger,
-  cmd = 'GitMessenger',
-  keys = '<Plug>(git-messenger)',
-}
+    -- Treesitter supported schemes -
+    -- https://github.com/rockerBOO/awesome-neovim#color
+    -- Lots of plugin support - https://github.com/folke/tokyonight.nvim
+    -- Aid to setting colors - https://github.com/rktjmp/lush.nvim
+    -- use {
+    --   'arcticicestudio/nord-vim',
+    --   -- after = 'packer.nvim',
+    --   config = function()
+    --     vim.cmd([[colorscheme nord]])
+    --   end,
+    -- }
+    -- Note: rktjmp/lush.nvim to quickly create colorschemes
+    -- Looks ok, but background is tinted, same with sonokai
+    -- use {
+    --   'rafamadriz/neon',
+    --   -- config = function() vim.cmd([[colorscheme neon]]) end,
+    -- }
+    -- use {
+    --   'metalelf0/jellybeans-nvim',
+    --   requires = {
+    --     {'rktjmp/lush.nvim'},
+    --   },
+    -- }
 
--- Alternative: undotree
--- Alternative: gundo
--- Forks and extends gundo
-add_plugin {
-  'simnalamburt/vim-mundo',
-  cmd = 'MundoToggle',
-}
+    -- Ok options for building ones own
+    -- use {
+    --   'RRethy/nvim-base16',
+    -- }
+    -- use {
+    --   'mhartington/oceanic-next',
+    -- }
+    -- use {
+    --   'sainnhe/edge',
+    -- }
+    -- use {
+    --   -- Not bad, tinted bg, hard to tell print vs self._bar colors
+    --   'sainnhe/sonokai',
+    -- }
+    -- use {
+    --   'tomasiser/vim-code-dark',
+    --   -- config = function() vim.cmd([[colorscheme codedark]]) end,
+    -- }
+    -- use {
+    --   -- Dimmed or dark_default are ok, but a little blue
+    --   'projekt0n/github-nvim-theme',
+    --   -- config = function() vim.cmd([[colorscheme github_dark_default]]) end,
+    --   -- config = function() vim.cmd([[colorscheme github_dimmed]]) end,
+    -- }
 
--- Alternative: lh-tags, easytags, watch script, git rebase hook
--- https://www.reddit.com/r/vim/comments/6ovppc/vimeasytags_alternative/
--- Note: Easytags is not maintained, but has tag highlighting
--- call dein#add('ludovicchabant/vim-gutentags')
+    -- Rejected:
+    -- 'navarasu/onedark.nvim', -- Ok, neon slightly better
+    -- 'EdenEast/nightfox.nvim', -- Colors too light - intended for much darker
+    -- background
+    -- 'novakne/kosmikoa.nvim', -- Colors ok, aggressive italics, bad bg
+    -- 'Th3Whit3Wolf/space-nvim', -- Also lots of italics
+    -- 'glepnir/zephyr-nvim',
+    -- 'Th3Whit3Wolf/one-nvim', -- Need to fix background, maybe worthwhile?
+    -- 'mhartington/oceanic-next', -- Need to fix background, maybe worthwhile?
+    -- 'Th3Whit3Wolf/onebuddy',
+    -- 'tomasiser/vim-code-dark', -- A little too dark, can probably adjust bg
+    -- 'sainnhe/edge',  -- Not as good as sonokai
+    -- 'ellisonleao/gruvbox.nvim', -- Ok potentially
+    -- 'ishan9299/nvim-solarized-lua', -- Even with overrides to colors, still
+    -- too low contrast
 
--- Alternative: https://github.com/tyru/caw.vim
--- Removed for conflict with vim-swap
--- call dein#add('tomtom/tcomment_vim')
--- TODO: nvim-comment replaces?
--- call dein#add('tpope/vim-commentary')
--- TODO: Learn to use - some of the commands like cr*
-add_plugin 'tpope/vim-abolish'
+    use {
+      'catppuccin/nvim',
+      as = 'catppuccin',
+      config = config.catppuccin,
+    }
 
--- Options:
--- - easymotion/sneak - older and vim focused
-add_plugin {
-  'phaazon/hop.nvim',
-  branch = 'v2',
-  config = config.hop,
-}
--- - lightspeed.nvim - seems most active, supports multi-window seek
--- Issues:
--- - No way to just seek two characters globally - really wants to operate
---  from cursor
--- - A little weird to get used to. Might be worth it if not for the above
---  issue. E.g. auto jumps early if you enter a unique first char, timeouts
---  on repeated jumps for f are REALLY low, etc
--- add_plugin {
---   'ggandor/lightspeed.nvim',
---   -- Config also does mappings, since these use arpeggio
---   -- TODO: Use autocommands for the mappings instead
---   config = config.lightspeed,
---   dependencies = {
---     {'kana/vim-arpeggio'},
---   }
--- }
+    use {
+      'norcalli/nvim-colorizer.lua',
+      cmd = 'ColorizerToggle',
+    }
 
--- TODO: Replace
--- call dein#add('hynek/vim-python-pep8-indent', {'on_ft': 'python'})
--- call dein#add('tpope/vim-ragtag')
-add_plugin 'tpope/vim-repeat'
--- TODO: Consider machakann/vim-sandwich
-add_plugin 'tpope/vim-surround'
-add_plugin 'tpope/vim-unimpaired'
+    -- use {
+    --   'folke/tokyonight.nvim',
+    --   config = config.tokyonight,
+    -- }
 
--- TODO: Session manager
--- -- Alternative: tpope/vim-obsession
--- call dein#add('xolox/vim-misc')
--- call dein#add('xolox/vim-session')
-add_plugin {
-  'rmagatti/auto-session',
-  config = config.autosession,
-  init = mappings.autosession,
-}
+    -- use {
+    --   'rebelot/kanagawa.nvim',
+    --   config = config.kanagawa,
+    -- }
 
--- Register preview - not really needed?
--- call dein#add('junegunn/vim-peekaboo')
--- TODO: gennaro-tedesco/nvim-peekup might be better modern alternative
+    use {
+      'nvim-telescope/telescope.nvim',
+      cmd = 'Telescope',
+      config = config.telescope,
+      setup = mappings.telescope,
+      module = 'telescope',
+      requires = {
+        {'nvim-lua/plenary.nvim'},
+        {
+          'nvim-telescope/telescope-fzf-native.nvim',
+          run = 'make',
+        },
+      },
+    }
 
--- TODO: Note: Disabled for now - use sidebar instead
--- -- Show open buffers, vertically
--- -- Other options: horizontal tagbar
--- -- vim-buftabline, vem-tabline
--- -- Has a bug when deleting unknown buffers (e.g. :Pytest file -s)
--- -- Fix: Add dictionary guard !has_key(s:bufPathDict, bufnr) to
--- -- BuildBufferPathSignDict
--- -- weynhamz is slightly newer
--- -- call dein#add('fholgado/minibufexpl.vim')
--- call dein#add('weynhamz/vim-plugin-minibufexpl')
--- add_plugin {
---   'weynhamz/vim-plugin-minibufexpl',
---   config = config.minibufexpl,
---   init = mappings.minibufexpl,
--- }
+    -- Note: For just esc, can use
+    -- https://github.com/max397574/better-escape.nvim
+    use {
+      'kana/vim-arpeggio',
+      config = config.arpeggio,
+    }
 
--- Command-mode keymaps
-add_plugin {
-  'vim-utils/vim-husk',
-  init = mappings.husk,
-}
+    use 'kyazdani42/nvim-web-devicons'
 
--- TODO: Make work with LSP or remove
-add_plugin {
-  'liuchengxu/vista.vim',
-  init = config.vista,
-  ft = {
-    'python',
-  },
-}
+    -- TODO: Take config from NvChad
+    -- TODO: Font
+    -- use {
+    --   'famiu/feline.nvim',
+    --   config = override_req('feline', 'plugins.configs.statusline'),
+    -- }
 
--- TODO: Other python plugins
--- Use https://github.com/jose-elias-alvarez/null-ls.nvim with linters
--- Alternative: Can use Yggdroot/indentLine to sort of replace +highlight
--- Alternatives:
--- - https://github.com/jeetsukumaran/vim-pythonsense
---   - Has many more motions
--- - vim-python-motions
---   - Slightly more precise
--- - vim-textobj-user has explicit function/class mappings
--- Git: Changed map to noremap for easymotion bindings
--- ,P and ,S - easymotion for top level items
--- add_plugin {
---   'tweekmonster/braceless.vim',
---   -- TODO: Test this, kind of weird to do config in setup but thats where
---   -- the autocmd is needed
---   config = config.braceless,
---   ft = {
---     'python',
---   },
--- }
+    -- TODO: Fix - control color, make vertical spacing work - probably the font
+    use {
+      'lukas-reineke/indent-blankline.nvim',
+      -- TODO: Debug - doesn't work with this
+      -- event = 'BufRead',
+      config = config.blankline,
+    }
 
--- Need to run :UpdateRemotePlugins
--- TODO: Replace with lsp?
--- call dein#add('numirias/semshi', {'on_ft': 'python'})
-add_plugin {
-  'vim-python/python-syntax',
-  ft = {
-    'python',
-  },
-}
+    -- TODO: Only on command
+    -- use {
+    --   'norcalli/nvim-colorizer.lua',
+    --   event = 'BufRead',
+    --   config = override_req('nvim_colorizer', '(plugins.configs.others).colorizer()'),
+    -- }
 
-local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
-if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    'git',
-    'clone',
-    '--filter=blob:none',
-    'https://github.com/folke/lazy.nvim.git',
-    '--branch=stable', -- latest stable release
-    lazypath,
-  })
-end
-vim.opt.rtp:prepend(lazypath)
-require('lazy').setup(plugins, {
-  performance = {
-    rtp = {
-      -- TODO: This is desirable behavior in general but breaks nvim-qt on
-      -- windows - which depends on this to add Gui comments. Look into manually
-      -- re-adding just the one file
-      reset = false,
-    },
-  },
+    -- use {
+    --   'nvim-treesitter/nvim-treesitter',
+    --   -- Treesitter recommends running this on startup, but seems too often
+    --   -- run = ':TSUpdate',
+    --   -- event = 'BufRead',
+    --   -- config = config.treesitter,
+    -- }
+    use {
+        'nvim-treesitter/nvim-treesitter',
+        run = function()
+            local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
+            ts_update()
+        end,
+        config = config.treesitter,
+    }
+
+    use {
+      'm-demare/hlargs.nvim',
+      requires = { 'nvim-treesitter/nvim-treesitter' },
+      config = config.hlargs,
+    }
+
+    -- TODO: Fix
+    -- use {
+    --   'lewis6991/gitsigns.nvim',
+    --   config = override_req('gitsigns', 'plugins.configs.gitsigns'),
+    --   setup = function()
+    --     require('core.utils').packer_lazy_load 'gitsigns.nvim'
+    --   end,
+    -- }
+
+    use {
+      'williamboman/mason.nvim',
+      -- run = ":MasonUpdate",
+      config = config.mason,
+    }
+
+    use {
+      'williamboman/mason-lspconfig.nvim',
+      requires = {
+        {'williamboman/mason.nvim'},
+      },
+      config = config.mason_lspconfig,
+    }
+
+    use {
+      'neovim/nvim-lspconfig',
+      -- TODO: Coq needs to override this for some reason?
+      -- TODO: Same with cmp
+      -- TODO: Find a cleaner way to handle this
+      -- config = function() require('plugins.lspconfig') end,
+      requires = {
+        {'williamboman/mason-lspconfig.nvim'},
+      },
+    }
+
+    -- TODO: Decide
+    local completionEngine = 'cmp'
+    if completionEngine == 'coq' then
+      use {
+        'ms-jpq/coq_nvim',
+        branch = 'coq',
+        config = config.coq,
+        requires = {
+          {'neovim/nvim-lspconfig'},
+        },
+      }
+    elseif completionEngine == 'cmp' then
+      use {
+        'rafamadriz/friendly-snippets',
+        -- event = 'InsertEnter',
+      }
+
+      -- Other options: https://github.com/rockerBOO/awesome-neovim#cursorline
+      -- Highlight current word
+      -- Note: Has config plus attach script in cmp
+      -- Note: Causes issues with really long args (see vim.cmd at the start of
+      -- this file)
+      -- use {
+      --   -- Note: Config is within lsp config
+      --   -- TODO: Add proper hooks to keep configs independent
+      --   'RRethy/vim-illuminate',
+      --   config = config.illuminate,
+      -- }
+
+      -- TODO: Consider other plugins
+      -- https://github.com/hrsh7th/nvim-cmp/wiki/List-of-sources - esp calc,
+      -- treesitter, lsp-signature-help - latter will require enabling native
+      -- menu
+      -- Consider also dadbod - will require custom bq extension though
+      -- TODO: Spelling correction - https://github.com/f3fora/cmp-spell and
+      -- underlines for misspellings
+      use {
+        'hrsh7th/nvim-cmp',
+        config = config.cmp,
+        requires = {
+          {'hrsh7th/cmp-buffer'},
+          {'hrsh7th/cmp-nvim-lsp'},
+          {'hrsh7th/cmp-path'},
+          {'hrsh7th/cmp-nvim-lua', after = 'nvim-cmp'},
+          {'hrsh7th/cmp-cmdline', after = 'nvim-cmp'},
+          {'hrsh7th/cmp-nvim-lsp-document-symbol', after = 'nvim-cmp'},
+          {'max397574/cmp-greek'},
+          {'hrsh7th/cmp-nvim-lsp-signature-help'},
+          {'ray-x/cmp-treesitter'},
+          {'L3MON4D3/LuaSnip'},
+        },
+        -- after = {'friendly-snippets'},
+      }
+
+      -- TODO: Try again - previously overlapped with nvim-cmp popup, but that
+      -- may be fixed with native menu
+      -- Take config from the author -
+      -- https://github.com/ray-x/nvim/blob/master/lua/modules/completion/plugins.lua
+      -- use {
+      --   'ray-x/lsp_signature.nvim',
+      --   after = {
+      --     'nvim-cmp',
+      --     'nvim-lspconfig',
+      --   },
+      --   config = config.lsp_signature,
+      --   requires = {
+      --     {'neovim/nvim-lspconfig'},
+      --   },
+      -- }
+
+      -- Other snippet plugins. Most popular as of 2022-04:
+      -- - https://github.com/SirVer/ultisnips
+      -- - https://github.com/hrsh7th/vim-vsnip - likely best integration with
+      -- cmp, but still vimscript
+      -- - https://github.com/norcalli/snippets.nvim
+      use {
+        'L3MON4D3/LuaSnip',
+        wants = 'friendly-snippets',
+        -- after = {
+        --   'nvim-cmp',
+        -- },
+        config = config.luasnip,
+      }
+
+      use {
+        'saadparwaiz1/cmp_luasnip',
+        after = {
+          'LuaSnip',
+          'nvim-cmp',
+        },
+      }
+
+      use {
+        'hrsh7th/cmp-nvim-lua',
+        after = {
+          'LuaSnip',
+          'nvim-cmp',
+        },
+      }
+    else
+      error('Invalid completion engine ' .. completionEngine)
+    end
+
+    use {
+      'folke/trouble.nvim',
+      requires = 'kyazdani42/nvim-web-devicons',
+      setup = mappings.trouble,
+      config = config.trouble,
+    }
+
+    use {
+      'sidebar-nvim/sidebar.nvim',
+      setup = mappings.sidebar,
+      config = config.sidebar,
+    }
+
+    -- TODO: Doesn't let repeat with newlines work
+    -- TODO: Use endwise functionality to auto-end language constructs
+    -- TODO: Adding newline inside a pair works poorly
+    -- TODO: Dig into their event attachment for cmp - can do any action after
+    -- accepting a completion
+    -- use {
+    --   'windwp/nvim-autopairs',
+    --   after = {
+    --     'nvim-cmp',
+    --   },
+    --   config = config.autopairs,
+    -- }
+
+    -- TODO: Consider also ending html/xml -
+    -- https://www.reddit.com/r/neovim/comments/mylhuw/is_there_a_treesitter_based_autopairs_plugin/
+    -- - windwp/nvim-ts-autotag
+    -- TODO: Try tmsvg/pear-tree - may support dot-repeat even more effectively
+    -- Though relatively unmaintained
+    use {
+      'cohama/lexima.vim',
+      setup = config.lexima,
+    }
+
+    use {
+      'andymass/vim-matchup',
+      -- Note: Configured in treesitter - need to edit that config instead
+    }
+
+    -- Nice for per-language mappings, but can't get it to stop adding a space
+    -- after comment lines
+    -- tpope/vim-commentary doesn't have the option either
+    -- use {
+    --   'terrortylor/nvim-comment',
+    --   -- cmd = {'CommentToggle', 'CommentOperator'},
+    --   config = config.comment,
+    --   setup = mappings.comment,
+    --   event = 'BufRead',
+    -- }
+    -- TODO: Learn some of the extra mappings
+    use {
+      'numToStr/Comment.nvim',
+      config = config.comment,
+    }
+
+    -- ----------Taken directly from old _nvimrc
+
+    -- Alternative: AndrewRadev/splitjoin.vim - more popular, but doesn't seem to
+    -- indent quite correctly
+    use {
+      'FooSoft/vim-argwrap',
+      cmd = 'ArgWrap',
+      config = config.argwrap,
+      setup = mappings.argwrap,
+    }
+
+    -- TODO: Needed? LSP may do format
+    -- TODO: Replace?
+    -- call dein#add('sbdchd/neoformat')
+
+    -- TODO: Find treesitter/lua replacements
+    -- Text objects
+    -- e.g. vaf, vac (rebound below to vaC, conflicts with tcomment select comment)
+    use {
+      'bps/vim-textobj-python',
+      config = config.textobj_python,
+      ft = {
+        'python',
+      },
+      requires = {
+        {'kana/vim-textobj-user'},
+      }
+    }
+    -- Alternative: https://github.com/vim-scripts/argtextobj.vim
+    -- Older: call dein#add('vim-scripts/Parameter-Text-Objects')
+    -- e.g. vi, - select parameter
+    use {
+      'sgur/vim-textobj-parameter',
+      requires = {
+        {'kana/vim-textobj-user'},
+      }
+    }
+    -- e.g. vie - ie trims whitespace, ae selects entire
+    use {
+      'kana/vim-textobj-entire',
+      requires = {
+        {'kana/vim-textobj-user'},
+      }
+    }
+    -- e.g. viv - camelCase or under_score part
+    use {
+      'Julian/vim-textobj-variable-segment',
+      requires = {
+        {'kana/vim-textobj-user'},
+      }
+    }
+    -- e.g. vam - method, vaM - method chain
+    use {
+      'thalesmello/vim-textobj-methodcall',
+      requires = {
+        {'kana/vim-textobj-user'},
+      }
+    }
+    -- TODO: Keep or remove below - add bindings as well
+    -- -- e.g. A-k to move a line down - hjkl movements
+    -- call dein#add('matze/vim-move')
+
+    -- TODO: Keep or remove below
+    -- Lots of text objects - learn or replace with vim-textobj-*
+    -- call dein#add('wellle/targets.vim')
+    -- * Has config
+    -- call dein#add('bkad/CamelCaseMotion')
+
+    -- Works ok, but requires python2
+    -- call dein#add('vim-scripts/swap-parameters')
+    -- Way better than swap-parameters, but bindings conflict with tcomment (net:
+    -- get rid of tcomment)
+    -- g<, g> to move param, gs to enter swap mode
+    use 'machakann/vim-swap'
+
+    -- Alternative: airblade/vim-gitgutter
+    -- e.g. [c, ]c, [C, ]C - jump to chunk
+    -- e.g. vig - select git chunk (mapped below)
+    use {
+      'mhinz/vim-signify',
+      setup = mappings.signify,
+      config = config.signify,
+    }
+    use 'tpope/vim-fugitive'
+
+    use {
+      'rhysd/git-messenger.vim',
+      setup = config.git_messenger,
+      cmd = 'GitMessenger',
+      keys = '<Plug>(git-messenger)',
+    }
+
+    -- Alternative: undotree
+    -- Alternative: gundo
+    -- Forks and extends gundo
+    use {
+      'simnalamburt/vim-mundo',
+      cmd = 'MundoToggle',
+    }
+
+    -- Alternative: lh-tags, easytags, watch script, git rebase hook
+    -- https://www.reddit.com/r/vim/comments/6ovppc/vimeasytags_alternative/
+    -- Note: Easytags is not maintained, but has tag highlighting
+    -- call dein#add('ludovicchabant/vim-gutentags')
+
+    -- Alternative: https://github.com/tyru/caw.vim
+    -- Removed for conflict with vim-swap
+    -- call dein#add('tomtom/tcomment_vim')
+    -- TODO: nvim-comment replaces?
+    -- call dein#add('tpope/vim-commentary')
+    -- TODO: Learn to use - some of the commands like cr*
+    use 'tpope/vim-abolish'
+
+    -- Options:
+    -- - easymotion/sneak - older and vim focused
+    use {
+      'phaazon/hop.nvim',
+      branch = 'v2',
+      config = config.hop(),
+    }
+    -- - lightspeed.nvim - seems most active, supports multi-window seek
+    -- Issues:
+    -- - No way to just seek two characters globally - really wants to operate
+    --  from cursor
+    -- - A little weird to get used to. Might be worth it if not for the above
+    --  issue. E.g. auto jumps early if you enter a unique first char, timeouts
+    --  on repeated jumps for f are REALLY low, etc
+    -- use {
+    --   'ggandor/lightspeed.nvim',
+    --   -- Config also does mappings, since these use arpeggio
+    --   -- TODO: Use autocommands for the mappings instead
+    --   config = config.lightspeed,
+    --   requires = {
+    --     {'kana/vim-arpeggio'},
+    --   }
+    -- }
+
+    -- TODO: Replace
+    -- call dein#add('hynek/vim-python-pep8-indent', {'on_ft': 'python'})
+    -- call dein#add('tpope/vim-ragtag')
+    use 'tpope/vim-repeat'
+    -- TODO: Consider machakann/vim-sandwich
+    use 'tpope/vim-surround'
+    use 'tpope/vim-unimpaired'
+
+    -- TODO: Session manager
+    -- -- Alternative: tpope/vim-obsession
+    -- call dein#add('xolox/vim-misc')
+    -- call dein#add('xolox/vim-session')
+    use {
+      'rmagatti/auto-session',
+      config = config.autosession,
+      setup = mappings.autosession,
+    }
+
+    -- Register preview - not really needed?
+    -- call dein#add('junegunn/vim-peekaboo')
+    -- TODO: gennaro-tedesco/nvim-peekup might be better modern alternative
+
+    -- TODO: Note: Disabled for now - use sidebar instead
+    -- -- Show open buffers, vertically
+    -- -- Other options: horizontal tagbar
+    -- -- vim-buftabline, vem-tabline
+    -- -- Has a bug when deleting unknown buffers (e.g. :Pytest file -s)
+    -- -- Fix: Add dictionary guard !has_key(s:bufPathDict, bufnr) to
+    -- -- BuildBufferPathSignDict
+    -- -- weynhamz is slightly newer
+    -- -- call dein#add('fholgado/minibufexpl.vim')
+    -- call dein#add('weynhamz/vim-plugin-minibufexpl')
+    -- use {
+    --   'weynhamz/vim-plugin-minibufexpl',
+    --   config = config.minibufexpl,
+    --   setup = mappings.minibufexpl,
+    -- }
+
+    -- Command-mode keymaps
+    use {
+      'vim-utils/vim-husk',
+      setup = mappings.husk,
+    }
+
+    -- TODO: Make work with LSP or remove
+    use {
+      'liuchengxu/vista.vim',
+      setup = config.vista,
+      ft = {
+        'python',
+      },
+    }
+
+    -- TODO: Other python plugins
+    -- Use https://github.com/jose-elias-alvarez/null-ls.nvim with linters
+    -- Alternative: Can use Yggdroot/indentLine to sort of replace +highlight
+    -- Alternatives:
+    -- - https://github.com/jeetsukumaran/vim-pythonsense
+    --   - Has many more motions
+    -- - vim-python-motions
+    --   - Slightly more precise
+    -- - vim-textobj-user has explicit function/class mappings
+    -- Git: Changed map to noremap for easymotion bindings
+    -- ,P and ,S - easymotion for top level items
+    -- use {
+    --   'tweekmonster/braceless.vim',
+    --   -- TODO: Test this, kind of weird to do config in setup but thats where
+    --   -- the autocmd is needed
+    --   config = config.braceless,
+    --   ft = {
+    --     'python',
+    --   },
+    -- }
+
+    -- Need to run :UpdateRemotePlugins
+    -- TODO: Replace with lsp?
+    -- call dein#add('numirias/semshi', {'on_ft': 'python'})
+    use {
+      'vim-python/python-syntax',
+      ft = {
+        'python',
+      },
+    }
+
+    -- TODO: Dig into below
+    -- Use pytest.vim instead - only works for pytest, but has way more features
+    -- call dein#add('tpope/vim-dispatch')
+    -- call dein#add('janko/vim-test')
+    -- Alternative: https://github.com/w0rp/python_tools
+    -- Alternative: NeoMake
+    -- TODO: Enable again?
+    -- call dein#add('alfredodeza/pytest.vim', {'on_cmd': 'Pytest'})
+
+    -- ----------End taken directly from old _nvimrc (TODO still: colorizer,
+    -- vimwiki, airline, etc)
+
+    -- TODO: Plugins
+    -- - https://github.com/ray-x/navigator.lua - Go to definition, references
+    -- - https://github.com/RishabhRD/nvim-lsputils - Code actions, references
+    -- - https://github.com/jose-elias-alvarez/null-ls.nvim - Add external lint
+    -- - kyazdani42/nvim-tree.lua or some other tree plugin (nvchad config)
+    -- - lspkind - from nvim-cmp, better icons
+
+  end,
+
+  config = {
+    auto_clean = true,
+    compile_on_sync = true,
+  }
 })
 
 --[[
 TODOs:
+- fzy instead of fzf for telescope? (and in cli)
+- Packer setup lazy loading - https://www.reddit.com/r/neovim/comments/opipij/guide_tips_and_tricks_to_reduce_startup_and/
 - Telescope vimwiki - https://www.reddit.com/r/neovim/comments/pyvelg/telescopevimwikinvim_just_a_quick_way_to_open_up/
+- Separate gui commands - https://github.com/equalsraf/neovim-qt/issues/94
 
 Themes:
 - Nordic with extra color - https://www.reddit.com/r/neovim/comments/p237ig/neovim_nordic_rice/
 --]]
+
 -- Quick guide to the various vim pieces:
 -- - https://github.com/nanotee/nvim-lua-guide
 -- - https://vonheikemen.github.io/devlog/tools/configuring-neovim-using-lua/
@@ -1607,21 +1547,3 @@ Themes:
 -- if not ok then
 --    error("Error loading core" .. "\n\n" .. err)
 -- end
--- TODO: Dig into below
--- Use pytest.vim instead - only works for pytest, but has way more features
--- call dein#add('tpope/vim-dispatch')
--- call dein#add('janko/vim-test')
--- Alternative: https://github.com/w0rp/python_tools
--- Alternative: NeoMake
--- TODO: Enable again?
--- call dein#add('alfredodeza/pytest.vim', {'on_cmd': 'Pytest'})
-
--- ----------End taken directly from old _nvimrc (TODO still: colorizer,
--- vimwiki, airline, etc)
-
--- TODO: Plugins
--- - https://github.com/ray-x/navigator.lua - Go to definition, references
--- - https://github.com/RishabhRD/nvim-lsputils - Code actions, references
--- - https://github.com/jose-elias-alvarez/null-ls.nvim - Add external lint
--- - kyazdani42/nvim-tree.lua or some other tree plugin (nvchad config)
--- - lspkind - from nvim-cmp, better icons
