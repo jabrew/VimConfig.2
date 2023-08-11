@@ -1,6 +1,7 @@
 -- Debugging tips
 -- vim.inspect(val) will pretty print tables
 -- e.g. :lua print(vim.inspect(my_table))
+-- :Inspect - get highlight groups of word under cursor
 -- TODO: Sign column disappears in edit mode in lua/plugins/sidebar.lua but not
 -- here? Maybe try git add
 -- \C for case sensitive and \c for case insensitive regex
@@ -324,6 +325,7 @@ vim.cmd([[
   augroup filetypedetect
     au BufRead,BufNewFile *.thrift        setfiletype thrift
     au BufRead,BufNewFile *.proto         setfiletype proto
+    au BufRead,BufNewFile *.wiki         setfiletype vimwiki
   augroup END
 " }
 
@@ -422,6 +424,13 @@ local function map_key(mode, lhs, rhs, opts)
   -- end
   -- vim.api.nvim_set_keymap(mode, lhs, rhs, options)
   vim.api.nvim_set_keymap(mode, lhs, rhs, opts)
+end
+
+-- General keymaps
+vim.api.nvim_set_keymap('n', '<Space>fl', "o<Esc>\"*p<Cmd>s/^\\(- \\)*-/-/<CR>^f?", {})
+
+local function is_directory(path)
+  return vim.fn.isdirectory(vim.fn.expand(path))
 end
 
 CURRENT_TREESITTER_CONTEXT = function()
@@ -563,15 +572,22 @@ config.catppuccin = function()
       percentage = 0.1,
     },
     -- TODO: Consider no italic
+    styles = {
+      comments = {},
+    },
     color_overrides = {
       mocha = {
         base = "#292929",
+        overlay0 = "#8C90A6",
+        -- overlay0 = "#6C7086",
       },
     },
     integrations = {
       cmp = true,
       illuminate = true,
       telescope = true,
+      vimwiki = true,
+      treesitter = true,
     }
   })
   vim.cmd.colorscheme('catppuccin')
@@ -776,6 +792,10 @@ config.luasnip = function()
   }
   local paths = get_snippet_rtp()
   table.insert(paths, "~/VimConfig/snippets_luasnip")
+  maybe_path = "~/snippets_luasnip_snap"
+  if is_directory(maybe_path) then
+    table.insert(paths, maybe_path)
+  end
   require("luasnip.loaders.from_vscode").lazy_load({
     paths = paths,
   })
@@ -813,9 +833,13 @@ mappings.sidebar = function()
   -- by packer
   -- map_key('n', '<C-N>', "<cmd>lua require('plugins.sidebar').next_buf()<CR>", {})
   -- map_key('n', '<C-P>', "<cmd>lua require('plugins.sidebar').prev_buf()<CR>", {})
-  vim.api.nvim_set_keymap('n', '<C-P>', "<cmd>lua require('plugins.sidebar').prev_buf()<CR>", {})
-  vim.api.nvim_set_keymap('n', '<C-N>', "<cmd>lua require('plugins.sidebar').next_buf()<CR>", {})
-  vim.api.nvim_set_keymap('n', '<leader>d', "<cmd>lua require('plugins.sidebar').delete_buf()<CR>", {})
+  if vim.g.is_tabbed == 0 then
+    vim.api.nvim_set_keymap('n', '<C-P>', "<cmd>lua require('plugins.sidebar').prev_buf()<CR>", {})
+    vim.api.nvim_set_keymap('n', '<C-N>', "<cmd>lua require('plugins.sidebar').next_buf()<CR>", {})
+    vim.api.nvim_set_keymap('n', '<leader>d', "<cmd>lua require('plugins.sidebar').delete_buf()<CR>", {})
+  else
+    vim.api.nvim_set_keymap('n', '<leader>d', "<cmd>bd<CR>", {})
+  end
 end
 
 config.sidebar = function()
@@ -864,7 +888,7 @@ end
 config.autosession = function()
   vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal"
   require('auto-session').setup({
-    log_level = 'info',
+    -- log_level = 'info',
     auto_session_suppress_dirs = {'~/', '~/Projects'}
   })
 end
@@ -949,6 +973,12 @@ config.vista = function()
   \   "function": "\uf794",
   \   "variable": "\uf71b",
   \  }
+  ]])
+end
+
+config.vimwiki = function()
+  vim.cmd([[
+  let g:vimwiki_conceallevel = 0
   ]])
 end
 
@@ -1559,6 +1589,14 @@ add_plugin {
   ft = {
     'python',
   },
+}
+
+add_plugin {
+  'vimwiki/vimwiki',
+  init = config.vimwiki,
+  ft = {
+    'vimwiki',
+  }
 }
 
 local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
