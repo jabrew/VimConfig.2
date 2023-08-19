@@ -5,6 +5,8 @@ BufferInfo = {
   buffer_handle_to_name = {},
   buf_handles = {},
   diagnostics_called = 0,
+  last_run = os.time(),
+  cached_ls_text = '',
 }
 
 function buf_handles_changed(buf_handles)
@@ -84,6 +86,87 @@ function add_friendly_names(buffers)
   return buffers
 end
 
+function split_to_array(str, pattern)
+  local result = {}
+  for part in string.gmatch(str, pattern) do
+    table.insert(result, part)
+  end
+  return result
+end
+
+function add_buf_indicators(buf_info, match_str)
+  local attrs = {
+    current = false,
+    active = false,
+    hidden = false,
+    readonly = false,
+    modified = false,
+  }
+  -- TODO: Consider more traits
+  for char in match_str:gmatch(".") do
+    -- TODO: Slightly cheating without considering the position, but
+    -- each option is an unique char, so it should be ok
+    if char == '%' then
+      attrs['current'] = true
+    elseif char == 'a' then
+      attrs['active'] = true
+    elseif char == 'h' then
+      attrs['hidden'] = true
+    elseif char == '-' or char == '=' then
+      attrs['readonly'] = true
+    elseif char == '+' then
+      attrs['modified'] = true
+    end
+  end
+
+  for key, value in pairs(attrs) do
+    buf_info[key] = value
+  end
+end
+
+function get_extra_info(buf_handles)
+  local extra_info = {}
+
+  -- for _, buf_handle in ipairs(buf_handles) do
+  --   local item = {}
+  --   item['modified'] = vim.api.nvim_buf_get_option(buf_handle, 'modified')
+  --   extra_info[buf_handle] = item
+  -- end
+
+  -- Oddly, :ls sometimes returns an empty string, happens consistently while
+  -- refreshing just after a new buffer is spawned, cache it
+  -- TODO: Cache the output instead so we can avoid parsing everything
+  local ls_text = vim.api.nvim_exec(":ls", true)
+  -- local ls_text = vim.cmd.ls()
+  if ls_text == nil or ls_text == '' then
+    ls_text = BufferInfo.cached_ls_text
+  else
+    BufferInfo.cached_ls_text = ls_text
+  end
+  for line in string.gmatch(ls_text, "[^\r\n]+") do
+    _, _, buf_handle_str, match_str, file_name, line_str = string.find(
+      line,
+      -- TODO: Non-greedy match for .- may not work well, needs debugging
+      -- Note: If we use ls!, there can be no spaces between the line and the
+      -- letters
+      "^%s*(%d+)%s+(.-)%s+\"(.*)\"%s+line (%d+)%s*$"
+    )
+    local buf_handle = tonumber(buf_handle_str)
+    local line_number = tonumber(line_str)
+    assert(buf_handle ~= nil)
+    local buf_info = {
+      buf_handle = buf_handle,
+      file_name = file_name,
+      line = line_number,
+      tmp = match_str
+    }
+    add_buf_indicators(buf_info, match_str)
+    extra_info[buf_handle] = buf_info
+  end
+
+  return extra_info
+end
+
 function get_buffers(options)
   local buffers = {}
   local vim_fn = vim.fn
@@ -102,12 +185,24 @@ function get_buffers(options)
     end
   end
 
+  local extra_info = get_extra_info(buf_handles)
+
+  -- ~TODO: Maybe impossible to cache this - need to determine active
+  -- ~For now, just debounce (don't call more than once every 2s)
+  -- if BufferInfo.last_run + 1 >= os.time() then
+  -- end
   if not buf_handles_changed(buf_handles) then
     -- Still need to mark active and do other work - just don't recompute the
     -- names or handles
     buffers = BufferInfo.buffers
-    for _, buffer in pairs(buffers) do
-      buffer["active"] = buffer.handle == cur_buf_handle
+    for _, buf_info in pairs(buffers) do
+      buf_info["active"] = buf_info.handle == cur_buf_handle
+      local extra_info_buf = extra_info[buf_info.handle]
+      if extra_info_buf ~= nil then
+        for key, value in pairs(extra_info_buf) do
+          buf_info[key] = value
+        end
+      end
     end
     BufferInfo.buffers = buffers
     return buffers
@@ -115,12 +210,21 @@ function get_buffers(options)
 
   BufferInfo.buf_handles = buf_handles
 
+  -- local extra_info = get_extra_info(buf_handles)
+
   for _, buf_handle in pairs(buf_handles) do
-    table.insert(buffers, {
+    local buf_info = {
       handle = buf_handle,
       name = api.nvim_buf_get_name(buf_handle),
       active = buf_handle == cur_buf_handle,
-    })
+    }
+    local extra_info_buf = extra_info[buf_handle]
+    if extra_info_buf ~= nil then
+      for key, value in pairs(extra_info_buf) do
+        buf_info[key] = value
+      end
+    end
+    table.insert(buffers, buf_info)
   end
 
   buffers = add_friendly_names(buffers)
@@ -130,15 +234,39 @@ function get_buffers(options)
   return buffers
 end
 
-function get_buffer_display(buffer_info)
-  if buffer_info.active then
-    return "* " .. buffer_info.handle .. ": " .. buffer_info.friendly_name
-  else
-    return buffer_info.handle .. ": " .. buffer_info.friendly_name
+function get_buffer_display_old(buffer_info)
+  local prefix = ''
+  if buffer_info.current then
+    prefix = prefix .. '* '
   end
+  if buffer_info.active then
+    prefix = prefix .. 'v '
+  end
+  if buffer_info.modified then
+    prefix = prefix .. '+ '
+  end
+  local name = buffer_info.friendly_name
+  return prefix .. name
 end
 
-function get_buffer_string(options)
+function get_buffer_display(buffer_info)
+  local hl = "SidebarBufferNormal"
+  local prefix = ''
+  local suffix = ''
+  if buffer_info.current then
+    hl = "SidebarBufferCurrent"
+    prefix = prefix .. '* '
+  elseif buffer_info.active then
+    hl = "SidebarBufferActive"
+  end
+  if buffer_info.modified then
+    suffix = suffix .. ' +'
+  end
+  local name = buffer_info.friendly_name
+  return prefix .. name .. suffix, hl
+end
+
+function get_buffer_string_old(options)
   local buffers = get_buffers(options)
   local parts = {}
   for _, buffer_info in pairs(buffers) do
@@ -147,6 +275,18 @@ function get_buffer_string(options)
     table.insert(parts, buffer_display)
   end
   return table.concat(parts, "\n")
+end
+
+function get_buffer_string(options)
+  local buffers = get_buffers(options)
+  local lines = {}
+  local hls = {}
+  for _, buffer_info in pairs(buffers) do
+    local line, hl = get_buffer_display(buffer_info)
+    table.insert(hls, {hl, #lines, 0, -1})
+    table.insert(lines, line)
+  end
+  return {lines = lines, hl = hls}
 end
 
 function activate_buffer(index)
@@ -160,6 +300,10 @@ autocmd('BufEnter', {
   callback = function () sidebar.update() end,
 })
 
+-- vim.api.nvim_set_hl(0, 'SidebarBufferNormal', {fg="#FF0000"})
+-- vim.api.nvim_set_hl(0, 'SidebarBufferCurrent', {fg="#00FF00"})
+-- vim.api.nvim_set_hl(0, 'SidebarBufferActive', {fg="#0000FF"})
+
 local buffers = {
   title = "Buffers",
   icon = ">",
@@ -172,6 +316,19 @@ local buffers = {
   draw = function(ctx)
     return get_buffer_string({})
   end,
+  highlights = {
+    groups = {
+      -- Properties: gui, fg, bg
+      -- SidebarBufferNormal = { gui='NONE' },
+      -- SidebarBufferCurrent = { fg="#00FF00" },
+      -- SidebarBufferActive = { fg="#0000FF" },
+    },
+    links = {
+      SidebarBufferNormal = "SidebarNvimNormal",
+      SidebarBufferActive = "SidebarNvimKeyword",
+      SidebarBufferCurrent = "SidebarNvimLabel",
+    },
+  },
   bindings = {
     ['<CR>'] = function(line, col)
       return activate_buffer(line)

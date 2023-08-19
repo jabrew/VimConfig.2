@@ -244,6 +244,11 @@ cmp.setup.cmdline(":", {
   },
 })
 
+-- TODO: Also add type checkers (mypy or pytype or pyre - they include :infer to
+-- guess the type of some code)
+-- TODO: Also add linters - ruff
+-- To add a language server - install using :MasonInstall, add to mason config
+-- in init.lua, then add here
 nvim_lsp.pyright.setup({
   capabilities = cmp_config.default_capabilities(),
   flags = {
@@ -258,6 +263,15 @@ nvim_lsp.pyright.setup({
         -- TODO: If this is really slow, try to disable
         useLibraryCodeForTypes = true,
       },
+    },
+  },
+})
+
+nvim_lsp.ruff_lsp.setup({
+  init_options = {
+    settings = {
+      -- Any extra CLI arguments for `ruff` go here.
+      args = {},
     },
   },
 })

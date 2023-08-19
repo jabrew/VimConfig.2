@@ -459,6 +459,7 @@ config.mason_lspconfig = function()
     ensure_installed = {
       'lua_ls',
       'pyright',
+      'ruff_lsp',
     },
   })
 end
@@ -632,6 +633,42 @@ config.arpeggio = function()
   vim.fn['arpeggio#map']('v', '', 0, 'jk', '<Esc>')
   vim.fn['arpeggio#map']('o', '', 0, 'jk', '<Esc>')
   vim.fn['arpeggio#map']('s', '', 0, 'jk', '<Esc>')
+end
+
+config.lualine = function()
+  require('lualine').setup({
+    options = {
+      theme = "catppuccin",
+      icons_enabled = true,
+      component_separators = { left = '', right = ''},
+      section_separators = { left = '', right = ''},
+      ignore_focus = {},
+      always_divide_middle = true,
+      globalstatus = true,
+      refresh = {
+        statusline = 1000,
+      },
+    },
+    sections = {
+      lualine_a = {'mode'},
+      lualine_b = {'branch', 'diff', 'diagnostics'},
+      lualine_c = {'filename'},
+      -- lualine_x = {'encoding', 'fileformat', 'filetype'},
+      lualine_x = {'filetype'},
+      -- lualine_x = {},
+      lualine_y = {'progress'},
+      -- lualine_y = {'filetype', 'progress'},
+      lualine_z = {'location'},
+    },
+    inactive_sections = {
+      lualine_a = {},
+      lualine_b = {},
+      lualine_c = {'filename'},
+      lualine_x = {'location'},
+      lualine_y = {},
+      lualine_z = {},
+    },
+  })
 end
 
 config.blankline = function()
@@ -933,6 +970,15 @@ mappings.signify = function()
   ]])
 end
 
+mappings.spider = function()
+  -- vim.keymap.set({"n", "o", "x"}, "w", "<cmd>lua require('spider').motion('w')<CR>", { desc = "Spider-w" })
+  -- vim.keymap.set({"n", "o", "x"}, "e", "<cmd>lua require('spider').motion('e')<CR>", { desc = "Spider-e" })
+  -- vim.keymap.set({"n", "o", "x"}, "b", "<cmd>lua require('spider').motion('b')<CR>", { desc = "Spider-b" })
+  -- vim.keymap.set({"n", "o", "x"}, "ge", "<cmd>lua require('spider').motion('ge')<CR>", { desc = "Spider-ge" })
+  vim.keymap.set({"n", "o", "x"}, "<C-.>", "<cmd>lua require('spider').motion('w')<CR>", { desc = "Spider-w" })
+  vim.keymap.set({"n", "o", "x"}, "<C-,>", "<cmd>lua require('spider').motion('b')<CR>", { desc = "Spider-b" })
+end
+
 mappings.git_messenger = function()
   vim.cmd([[
     nnoremap <Space>gm :GitMessenger<CR>
@@ -984,7 +1030,7 @@ config.lexima = function()
   vim.g.lexima_enable_basic_rules = 1
   vim.g.lexima_enable_newline_rules = 1
   vim.g.lexima_enable_endwise_rules = 1
-  vim.g.lexima_nvim_accept_pum_with_enter = 0
+  vim.g.lexima_accept_pum_with_enter = 0
 end
 
 config.comment = function()
@@ -1094,14 +1140,15 @@ add_plugin {
   priority = 1000,
 }
 
-add_plugin 'kyazdani42/nvim-web-devicons'
+-- Lua fork has extra colors
+-- add_plugin 'kyazdani42/nvim-web-devicons'
+add_plugin 'nvim-tree/nvim-web-devicons'
 
--- TODO: Take config from NvChad
--- TODO: Font
--- add_plugin {
---   'famiu/feline.nvim',
---   config = override_req('feline', 'plugins.configs.statusline'),
--- }
+add_plugin {
+  'nvim-lualine/lualine.nvim',
+  dependencies = { 'nvim-tree/nvim-web-devicons' },
+  config = config.lualine,
+}
 
 -- TODO: Fix - control color, make vertical spacing work - probably the font
 add_plugin {
@@ -1285,7 +1332,7 @@ end
 
 add_plugin {
   'folke/trouble.nvim',
-  dependencies = 'kyazdani42/nvim-web-devicons',
+  dependencies = 'nvim-tree/nvim-web-devicons',
   init = mappings.trouble,
   config = config.trouble,
 }
@@ -1378,26 +1425,26 @@ add_plugin {
 --   }
 -- }
 -- -- e.g. vie - ie trims whitespace, ae selects entire
--- add_plugin {
---   'kana/vim-textobj-entire',
---   dependencies = {
---     {'kana/vim-textobj-user'},
---   }
--- }
+add_plugin {
+  'kana/vim-textobj-entire',
+  dependencies = {
+    {'kana/vim-textobj-user'},
+  }
+}
 -- -- e.g. viv - camelCase or under_score part
--- add_plugin {
---   'Julian/vim-textobj-variable-segment',
---   dependencies = {
---     {'kana/vim-textobj-user'},
---   }
--- }
+add_plugin {
+  'Julian/vim-textobj-variable-segment',
+  dependencies = {
+    {'kana/vim-textobj-user'},
+  }
+}
 -- -- e.g. vam - method, vaM - method chain
--- add_plugin {
---   'thalesmello/vim-textobj-methodcall',
---   dependencies = {
---     {'kana/vim-textobj-user'},
---   }
--- }
+add_plugin {
+  'thalesmello/vim-textobj-methodcall',
+  dependencies = {
+    {'kana/vim-textobj-user'},
+  }
+}
 -- TODO: Keep or remove below - add bindings as well
 -- -- e.g. A-k to move a line down - hjkl movements
 -- call dein#add('matze/vim-move')
@@ -1407,6 +1454,11 @@ add_plugin {
 -- call dein#add('wellle/targets.vim')
 -- * Has config
 -- call dein#add('bkad/CamelCaseMotion')
+add_plugin {
+  'chrisgrieser/nvim-spider',
+  lazy = true,
+  init = mappings.spider,
+}
 
 -- Works ok, but requires python2
 -- call dein#add('vim-scripts/swap-parameters')
@@ -1418,6 +1470,7 @@ add_plugin 'machakann/vim-swap'
 -- Alternative: airblade/vim-gitgutter
 -- e.g. [c, ]c, [C, ]C - jump to chunk
 -- e.g. vig - select git chunk (mapped below)
+-- TODO: lewis6991/gitsigns.nvim
 add_plugin {
   'mhinz/vim-signify',
   init = mappings.signify,
