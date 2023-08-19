@@ -11,6 +11,7 @@
 mkdir -p ~/Library/Preferences/glrnvim
 # ln -s ~/VimConfig/glrnvim.yml ~/Library/Preferences/glrnvim/config.yml
 ln -s ~/VimConfig/glrnvim.yml ~/Library/Application\ Support/glrnvim/config.yml
+ln -s ~/VimConfig/alacritty.yml ~/.config/alacritty/alacritty.yml
 
 ln -s ~/nvim-macos/bin/nvim ~/bin/nvim
 ln -s ~/glrnvim/target/release/glrnvim ~/bin/lgv
