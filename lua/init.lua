@@ -433,23 +433,6 @@ local function is_directory(path)
   return vim.fn.isdirectory(vim.fn.expand(path))
 end
 
-CURRENT_TREESITTER_CONTEXT = function()
-  -- if not packer_plugins["nvim-treesitter"] or packer_plugins["nvim-treesitter"].loaded == false then
-  --   return " "
-  -- end
-  local f = require'nvim-treesitter'.statusline({
-    indicator_size = 300,
-    type_patterns = {"class", "function", "method", "interface", "type_spec", "table", "if_statement", "for_statement", "for_in_statement"}
-  })
-  local fun_name = string.format("%s", f) -- convert to string, it may be a empty ts node
-
-  -- print(string.find(fun_name, "vim.NIL"))
-  if fun_name == "vim.NIL" then
-    return " "
-  end
-  return " " .. fun_name
-end
-
 local config = {}
 local mappings = {}
 -- Note: Bindings should go in mappings, to support lazy loading. There are some
@@ -589,6 +572,12 @@ config.catppuccin = function()
       telescope = true,
       vimwiki = true,
       treesitter = true,
+      barbecue = {
+          dim_dirname = true, -- directory name is dimmed by default
+          bold_basename = true,
+          dim_context = false,
+          alt_background = false,
+      },
     }
   })
   vim.cmd.colorscheme('catppuccin')
@@ -743,11 +732,17 @@ config.hlargs = function()
   vim.cmd [[autocmd ColorScheme * highlight! link Hlargs TSParameter]]
 end
 
--- TODO: Consider also utilyre/barbecue.nvim - winbar version
--- Seems a bit smoother/heavier weight, but has nice pieces - can show even
--- below function level, uses winbar so more consistent
-config.treesitter_context = function()
-  require('treesitter-context').setup()
+-- This is lighter weight than barbeque, but doesn't show below function level,
+-- and doesn't use winbar so slightly less consistent
+-- config.treesitter_context = function()
+--   require('treesitter-context').setup()
+-- end
+
+config.barbeque = function()
+  -- TODO: Also bind keys to move up
+  require("barbecue").setup({
+    theme = "catppuccin",
+  })
 end
 
 config.treesitter_textobjects = function()
@@ -1210,10 +1205,20 @@ add_plugin {
   config = config.hlargs,
 }
 
+-- add_plugin {
+--   'nvim-treesitter/nvim-treesitter-context',
+--   dependencies = { 'nvim-treesitter/nvim-treesitter' },
+--   config = config.treesitter_context,
+-- }
 add_plugin {
-  'nvim-treesitter/nvim-treesitter-context',
-  dependencies = { 'nvim-treesitter/nvim-treesitter' },
-  config = config.treesitter_context,
+  'utilyre/barbecue.nvim',
+  name = 'barbecue',
+  version = '*',
+  dependencies = {
+    'SmiteshP/nvim-navic',
+    'nvim-tree/nvim-web-devicons',
+  },
+  config = config.barbeque,
 }
 
 add_plugin {
@@ -1497,10 +1502,10 @@ add_plugin {
 -- g<, g> to move param, gs to enter swap mode
 add_plugin 'machakann/vim-swap'
 
--- Alternative: airblade/vim-gitgutter
 -- e.g. [c, ]c, [C, ]C - jump to chunk
 -- e.g. vig - select git chunk (mapped below)
--- TODO: lewis6991/gitsigns.nvim
+-- TODO: lewis6991/gitsigns.nvim - seems more modern, can show a diff more
+-- easily
 add_plugin {
   'mhinz/vim-signify',
   init = mappings.signify,
@@ -1538,6 +1543,7 @@ add_plugin 'tpope/vim-abolish'
 
 -- Options:
 -- - easymotion/sneak - older and vim focused
+-- - flash.nvim - looks great and much more flexible. TODO: Try
 add_plugin {
   'phaazon/hop.nvim',
   branch = 'v2',
@@ -1716,3 +1722,4 @@ Themes:
 -- - https://github.com/jose-elias-alvarez/null-ls.nvim - Add external lint
 -- - kyazdani42/nvim-tree.lua or some other tree plugin (nvchad config)
 -- - lspkind - from nvim-cmp, better icons
+-- - aerial - code navigation
