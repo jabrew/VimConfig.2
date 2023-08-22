@@ -5,10 +5,13 @@ Install:
 nodejs
 cargo
 
-cargo install alacritty
+-- Required for lsp
+pip install neovim
 
 
 Mac:
+
+cargo install alacritty
 
 mkdir -p ~/.config/nvim
 ln -s ~/VimConfig/lua/init.lua ~/.config/nvim/init.lua

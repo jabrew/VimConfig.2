@@ -448,6 +448,8 @@ config.mason_lspconfig = function()
   require('mason-lspconfig').setup({
     -- TODO: Seems likely that this just makes sure we've manually installed
     -- can do that via e.g. :MasonInstall lua_ls
+    -- New machine setup:
+    -- - pip install neovim
     ensure_installed = {
       'lua_ls',
       'pyright',
@@ -1495,10 +1497,6 @@ add_plugin {
   init = mappings.spider,
 }
 
--- Works ok, but requires python2
--- call dein#add('vim-scripts/swap-parameters')
--- Way better than swap-parameters, but bindings conflict with tcomment (net:
--- get rid of tcomment)
 -- g<, g> to move param, gs to enter swap mode
 add_plugin 'machakann/vim-swap'
 
