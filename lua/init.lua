@@ -2,6 +2,8 @@
 -- vim.inspect(val) will pretty print tables
 -- e.g. :lua print(vim.inspect(my_table))
 -- :Inspect - get highlight groups of word under cursor
+-- :verbose imap - get all mappings and the line of code they were set from.
+-- Often shows results with :imap won't
 -- TODO: Sign column disappears in edit mode in lua/plugins/sidebar.lua but not
 -- here? Maybe try git add
 -- \C for case sensitive and \c for case insensitive regex
@@ -826,7 +828,7 @@ config.luasnip = function()
   }
   local paths = get_snippet_rtp()
   table.insert(paths, "~/VimConfig/snippets_luasnip")
-  maybe_path = "~/snippets_luasnip_snap"
+  local maybe_path = "~/snippets_luasnip_snap"
   if is_directory(maybe_path) then
     table.insert(paths, maybe_path)
   end
@@ -855,8 +857,7 @@ mappings.trouble = function()
 end
 
 config.trouble = function()
-  require('trouble').setup({
-  })
+  require('trouble').setup()
 end
 
 mappings.sidebar = function()
@@ -1025,15 +1026,9 @@ config.vimwiki = function()
   ]])
 end
 
--- 2023-05 - This issue may be fixed, but seems still a bit worse at e.g. adding
--- curly brace then newline (wrong indent). Should be fixable with config
 -- Note: Lexima handles repeat better - this handles single line repeats well,
 -- though multiline can get glitchy
--- TODO: Consider using this instead - has much more power
 -- Note: There's an issue with <CR> with the preview menu up - repro:
--- <text to trigger autocomplete><c-n><cr> - undo will break and add an extra
--- line. Maybe autopairs, so try lexima
--- Note: Above issue is probably braceless with <cr> mapped
 -- TODO: Get this to work with newline (e.g. {<cr>)
 config.autopairs = function()
   -- require('nvim-autopairs').setup({
@@ -1053,12 +1048,12 @@ config.autopairs = function()
     }))
 end
 
-config.lexima = function()
-  vim.g.lexima_enable_basic_rules = 1
-  vim.g.lexima_enable_newline_rules = 1
-  vim.g.lexima_enable_endwise_rules = 1
-  vim.g.lexima_accept_pum_with_enter = 0
-end
+-- config.lexima = function()
+--   vim.g.lexima_enable_basic_rules = 1
+--   vim.g.lexima_enable_newline_rules = 1
+--   vim.g.lexima_enable_endwise_rules = 1
+--   vim.g.lexima_accept_pum_with_enter = 0
+-- end
 
 config.comment = function()
   require('Comment').setup()
@@ -1380,28 +1375,29 @@ add_plugin {
   config = config.sidebar,
 }
 
--- TODO: Doesn't let repeat with newlines work
--- TODO: Use endwise functionality to auto-end language constructs
--- TODO: Adding newline inside a pair works poorly
--- TODO: Dig into their event attachment for cmp - can do any action after
--- accepting a completion
--- add_plugin {
---   'windwp/nvim-autopairs',
---   dependencies = {
---     'nvim-cmp',
---   },
---   config = config.autopairs,
--- }
-
 -- TODO: Consider also ending html/xml -
 -- https://www.reddit.com/r/neovim/comments/mylhuw/is_there_a_treesitter_based_autopairs_plugin/
 -- - windwp/nvim-ts-autotag
--- TODO: Try tmsvg/pear-tree - may support dot-repeat even more effectively
--- Though relatively unmaintained
+-- TODO: Use endwise functionality to auto-end language constructs - https://github.com/RRethy/nvim-treesitter-endwise
+
+-- TODO: Doesn't let repeat with newlines work
+-- TODO: Dig into their event attachment for cmp - can do any action after
+-- accepting a completion
 add_plugin {
-  'cohama/lexima.vim',
-  init = config.lexima,
+  'windwp/nvim-autopairs',
+  dependencies = {
+    'nvim-cmp',
+  },
+  event = 'InsertEnter',
+  config = config.autopairs,
 }
+
+-- TODO: Works quite well, better repeat, but causes status flicker. Can
+-- probably fix - issue is probably that mappings don't have <cmd> or <silent>
+-- add_plugin {
+--   'cohama/lexima.vim',
+--   init = config.lexima,
+-- }
 
 add_plugin {
   'andymass/vim-matchup',
@@ -1485,6 +1481,9 @@ add_plugin {
 -- TODO: Keep or remove below - add bindings as well
 -- -- e.g. A-k to move a line down - hjkl movements
 -- call dein#add('matze/vim-move')
+-- TODO: Treesitter context -
+-- https://github.com/RRethy/nvim-treesitter-textsubjects - note that currently
+-- use <cr> in treesitter config to do a weaker version of this
 
 -- TODO: Keep or remove below
 -- Lots of text objects - learn or replace with vim-textobj-*
@@ -1628,6 +1627,8 @@ add_plugin {
 -- - vim-textobj-user has explicit function/class mappings
 -- Git: Changed map to noremap for easymotion bindings
 -- ,P and ,S - easymotion for top level items
+-- TODO: This breaks e.g. text_which_has_autocomplete<c-n><cr> - after this undo
+-- will fail
 -- add_plugin {
 --   'tweekmonster/braceless.vim',
 --   -- TODO: Test this, kind of weird to do config in setup but thats where
@@ -1641,6 +1642,7 @@ add_plugin {
 -- Need to run :UpdateRemotePlugins
 -- TODO: Replace with lsp?
 -- call dein#add('numirias/semshi', {'on_ft': 'python'})
+
 add_plugin {
   'vim-python/python-syntax',
   ft = {
