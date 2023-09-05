@@ -50,43 +50,81 @@ M.jump_to_local_def = function()
   end
 end
 
+-- From https://github.com/hrsh7th/nvim-cmp/wiki/Menu-Appearance
+-- TODO: Use more of that wiki
 local kind_symbols = {
-  Text = "",
-  Method = "ƒ",
-  Function = "",
-  Constructor = "",
-  Field = "ﴲ",
-  Variable = "",
-  Class = "פּ",
-  Interface = "蘒",
-  Module = "",
-  Property = "",
-  Unit = "塞",
-  Value = "",
+  Class = "󰠱",
+  Color = "󰏘",
+  Constant = "󰏿",
+  Constructor = "",
+  Default = "",
   Enum = "了",
-  Keyword = "",
-  Snippet = "",
-  Color = "",
-  File = "",
-  Reference = "",
-  Folder = "",
   EnumMember = "",
-  Constant = "",
-  Struct = " ",
-  Event = "ﳅ",
-  Operator = "",
-  TypeParameter = " ",
-  Default = ""
+  Event = "",
+  Field = "󰇽",
+  File = "󰈙",
+  Folder = "󰉋",
+  Function = "󰊕",
+  Interface = "",
+  Keyword = "󰌋",
+  Method = "󰆧",
+  Module = "",
+  Operator = "󰆕",
+  Property = "󰜢",
+  Reference = "",
+  Snippet = "",
+  Struct = "",
+  Text = "",
+  TypeParameter = "󰅲",
+  Unit = "",
+  Value = "󰎠",
+  Variable = "󰂡",
 }
+-- local kind_symbols = {
+--   TextOld = "",
+--   MethodOld = "ƒ",
+--   FunctionOld = "",
+--   ConstructorOld = "",
+--   FieldOld = "ﴲ",
+--   VariableOld = "",
+--   ClassOld = "פּ",
+--   InterfaceOld = "蘒",
+--   ModuleOld = "",
+--   PropertyOld = "",
+--   UnitOld = "塞",
+--   ValueOld = "",
+--   EnumOld = "了",
+--   KeywordOld = "",
+--   SnippetOld = "",
+--   ColorOld = "",
+--   FileOld = "",
+--   ReferenceOld = "",
+--   FolderOld = "",
+--   EnumMemberOld = "",
+--   ConstantOld = "",
+--   StructOld = " ",
+--   EventOld = "ﳅ",
+--   OperatorOld = "",
+--   TypeParameterOld = " ",
+--   DefaultOld = "",
+-- }
 
+-- Use https://www.nerdfonts.com/cheat-sheet to find symbols
+-- Insert 8-bit - <c-v>uFFFF
+-- Insert 16-bit - doesn't see to work (<c-v>U), but can just copy from https://github.com/ziontee113/icon-picker.nvim/blob/master/lua/icon-picker/icons/nf-v3-icon-list.lua
+-- This isn't too reliable - plugin appears out of date
 local source_symbols = {
-  buffer = " ﬘",
-  nvim_lsp = " ",
-  -- TODO: Choose something subtler
+  -- buffer = " ﬘",
+  -- \udb82\udda8
+  buffer = " 󰦪",
+  -- nvim_lsp = " ",
+  nvim_lsp = " 󰌨",
   -- luasnip = " 🐍",
+  luasnip = " 󰩫",
   treesitter = " ",
   nvim_lua = " ",
-  spell = " 暈",
+  -- spell = " 暈",
+  spell = " 󰓆",
 }
 
 -- Use an on_attach function to only map the following keys
